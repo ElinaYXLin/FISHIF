@@ -1,4 +1,4 @@
-function flyimagetile4_quick(lf_name,varargin)
+function flyimagetile4_quick_rotate(lf_name,standard_fl,varargin)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -15,19 +15,20 @@ list_sub = 'stacks/';
 tile_name = 'tile';
 % YY_name = 'Y';
 tif_name = 'stack';
-single_add = '_new/';
+single_add = '_new_rotate/';
 % temp_add = '_temp/';
 figure_tail = '.tif';
 list_name = 'matchlist.xls';
+time_name='time';
 std_th = 50;
 
-standard_record_confocal = 'Calibration/Results/standard.mat';
+standard_record_confocal = [standard_fl,'Calibration/Results/standard.mat'];
 % standard_record_60X = 'Calibration3/Results/standard_60X.mat';
-standard_record_60X_confocal = 'Calibration3_01052020/Results/standard_60X.mat';
-standard_record_airy = 'Calibration/Results/standard.mat';
-standard_record_60X_airy = 'Calibration3_08112019/Results/standard_60X.mat';
-standard_record_fast = 'Calibration/Results/standard.mat';
-standard_record_60X_fast = 'Calibration3_FA_08112019/Results/standard_60X.mat';
+standard_record_60X_confocal = [standard_fl,'Calibration3_01052020/Results/standard_60X.mat'];
+standard_record_airy = [standard_fl,'Calibration/Results/standard.mat'];
+standard_record_60X_airy = [standard_fl,'Calibration3_08112019/Results/standard_60X.mat'];
+standard_record_fast = [standard_fl,'Calibration/Results/standard.mat'];
+standard_record_60X_fast = [standard_fl,'Calibration3_FA_08112019/Results/standard_60X.mat'];
 default_obj = '60X';
 
 fast_add = 'F';
@@ -91,6 +92,10 @@ if isa(lf_name,'char') && strcmp(lf_name(end-3:end),'.xls')
     list_name0 = lf_name;
     [num_list, folder_list] = xlsread(list_name0);
     folder_list = folder_list(strcmpi('T',folder_list(:,6)),:);
+    folder_new=folder_list;
+%     pathname=replace(lf_name,'Duallist.xls','');
+%     folder_new=cellfun(@(x) [pathname,x],folder_list(:,1),'UniformOutput',false);
+%     folder_list(:,1)=folder_new;
 elseif isa(lf_name,'cell')
     folder_list = lf_name;
 else
@@ -104,7 +109,16 @@ for list_I0 = 1:NN1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Initialization %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    [num_list, file_list] = xlsread([folder_name,list_name]);
+%     [num_list, file_list] = xlsread([folder_name,list_name]);
+    try
+        raw = readcell([folder_name,list_name]);
+    catch
+        folder_name = [folder_new{list_I0,1},list_sub];
+        raw = readcell([folder_name,list_name]);
+    end
+    num_list=cell2mat(raw(:,cellfun(@isnumeric,raw(1,:))));
+    file_list=raw;
+    file_list(:,~cellfun(@ischar,raw(1,:)))={''};
     [N1,N2] = size(file_list);
     
     if ~isempty(varargin) && ~isempty(varargin{1})
@@ -175,7 +189,14 @@ for list_I0 = 1:NN1
         end
         
         %%%%% Intensity correction mask generation: ---------------------------
-        temp = imread([folder_name,file_list{list_I,1},tile_name,'01/',tif_name,'01.tif']);
+        try
+            temp = imread([folder_name,file_list{list_I,1},tile_name,'01/',tif_name,'01.tif']);
+            time_dimension=0;
+        catch
+            temp = imread([folder_name,file_list{list_I,1},tile_name,'01/time0001',tif_name,'01.tif']);
+            stack_num=size(dir([folder_name,file_list{list_I,1},tile_name,'01/time0001','*.tif']),1);
+            time_dimension=1;
+        end
         corr1_size = size(temp);
         corr1_size(1:2) = corr1_size(1:2)-2*delta;
         imcorr1 = corr_mask(corr1_size,channel_name,resolution,change_obj,1);
@@ -476,25 +497,48 @@ for list_I0 = 1:NN1
 % % %             tiffwrite0(outimage(:,:,:,Iz),[folder_name,out_name,im_name]);
 % % %         end
 % % %             %%%% --------------------------------------------------------------
-            
-        for Iz = 1:length(I_layer)
-            I_layer0 = I_layer(Iz);
-            I_Y = 1;
-            outimage = outimage0{I_Y}(:,Is_start(I_Y):Is_end(I_Y),:,I_layer0);
+        if time_dimension==1    
+            for Iz = 1:length(I_layer)
+                I_layer0 = I_layer(Iz);
+                I_Y = 1;
+                outimage = outimage0{I_Y}(:,Is_start(I_Y):Is_end(I_Y),:,I_layer0);
 
-            for I_Y = 2:Nbin(1)
-                I_layer0 = I_layer0+dz2_max(I_Y);
-                outimage = cat(1,outimage,outimage0{I_Y}(dy_max(I_Y)+1:end,Is_start(I_Y):Is_end(I_Y),:,I_layer0));
-            end
-        %%%% --------------------------------------------------------------
+                for I_Y = 2:Nbin(1)
+                    I_layer0 = I_layer0+dz2_max(I_Y);
+                    outimage = cat(1,outimage,outimage0{I_Y}(dy_max(I_Y)+1:end,Is_start(I_Y):Is_end(I_Y),:,I_layer0));
+                end
+            %%%% --------------------------------------------------------------
 
-        %%%% Output: ------------------------------------------------------
-            if exist([folder_name,out_name]) ~= 7
-                mkdir([folder_name,out_name]);
+            %%%% Output: ------------------------------------------------------
+                if exist([folder_name,out_name]) ~= 7
+                    mkdir([folder_name,out_name]);
+                end
+                time_index=floor((Iz-1)/stack_num)+1;
+                stack_index=mod(Iz-1,stack_num)+1;
+                im_name = [time_name,num2str(time_index,'%04u'),tif_name,num2str(stack_index,'%02u'),figure_tail];
+    %                 imwrite(outimage,[folder_name,out_name,imlist1(I_layer).name]);
+                tiffwrite0(outimage,[folder_name,out_name,im_name]);
             end
-            im_name = [tif_name,num2str(Iz,'%02u'),figure_tail];
-%                 imwrite(outimage,[folder_name,out_name,imlist1(I_layer).name]);
-            tiffwrite0(outimage,[folder_name,out_name,im_name]);
+        else
+            for Iz = 1:length(I_layer)
+                I_layer0 = I_layer(Iz);
+                I_Y = 1;
+                outimage = outimage0{I_Y}(:,Is_start(I_Y):Is_end(I_Y),:,I_layer0);
+
+                for I_Y = 2:Nbin(1)
+                    I_layer0 = I_layer0+dz2_max(I_Y);
+                    outimage = cat(1,outimage,outimage0{I_Y}(dy_max(I_Y)+1:end,Is_start(I_Y):Is_end(I_Y),:,I_layer0));
+                end
+            %%%% --------------------------------------------------------------
+
+            %%%% Output: ------------------------------------------------------
+                if exist([folder_name,out_name]) ~= 7
+                    mkdir([folder_name,out_name]);
+                end
+                im_name = [tif_name,num2str(Iz,'%02u'),figure_tail];
+    %                 imwrite(outimage,[folder_name,out_name,imlist1(I_layer).name]);
+                tiffwrite0(outimage,[folder_name,out_name,im_name]);
+            end
         end
         %%%% --------------------------------------------------------------
             

@@ -22,7 +22,7 @@ function varargout = emmask_manual(varargin)
 
 % Edit the above text to modify the response to help emmask_manual
 
-% Last Modified by GUIDE v2.5 09-Nov-2022 11:13:47
+% Last Modified by GUIDE v2.5 08-Sep-2013 15:03:11
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -584,3 +584,8 @@ overlay = zeros([size(em_mask),3]);
 overlay(:,:,1) = em_perim;
 overlay(:,:,2) = em_perim;
 overlay(:,:,3) = em_perim+DAPI_out;
+
+
+
+
+

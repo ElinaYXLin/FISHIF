@@ -22,7 +22,7 @@ list_name = 'matchlist.xls';
 std_th = 50;
 
 standard_record_confocal = 'Calibration/Results/standard.mat';
-% standard_record_60X = 'Calibration3/Results/standard_60X.mat';
+% standard_record_60X_confocal = 'Calibration3/Results/standard_60X.mat';
 standard_record_60X_confocal = 'Calibration3_01052020/Results/standard_60X.mat';
 standard_record_airy = 'Calibration/Results/standard.mat';
 standard_record_60X_airy = 'Calibration3_08112019/Results/standard_60X.mat';
@@ -37,15 +37,15 @@ fast_offset = 10000;
 delta_fast = [12,0];
 
 overlay_airy = 0.05;
-dz_range_airy = 15;
+dz_range_airy = 10;
 dx_range_airy = 100;
-ds_range_airy = 50;
+ds_range_airy = 30;
 delta_airy = [0,0];
 
-overlay_confocal = 0;
-dz_range_confocal = 0;
-dx_range_confocal = 0;
-ds_range_confocal = 0;
+overlay_confocal = 0.03;
+dz_range_confocal = 10;
+dx_range_confocal = 100;
+ds_range_confocal = 30;
 delta_confocal = [0,0];
 
 para_name = 'stitch_parameter';
@@ -68,20 +68,6 @@ if length(varargin) >= 4 && ~isempty(varargin{4})
 else
     p_start = 0;
     p_end = 1;
-end
-
-if length(varargin) >= 5 && ~isempty(varargin{5})
-    I_dz0 = varargin{5};
-else
-    I_dz0 = [];
-end
-
-if length(varargin) >= 6 && ~isempty(varargin{6})
-    dz10 = varargin{6}{1};
-    dz20 = varargin{6}{2};
-else
-    dz10 = [];
-    dz20 = [];
 end
 
 
@@ -119,7 +105,7 @@ for list_I0 = 1:NN1
 %% Processing %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     for list_I = list_J_all%1:N1
-        out_name = [file_list{list_I,1}(1:(end-1)),single_add] %%% output folder name
+        out_name = [file_list{list_I,1}(1:(end-1)),single_add]; %%% output folder name
 %         out_name0 = [file_list{list_I,1}(1:(end-1)),temp_add]; %%% temp output folder name
         match_channel = num_list(list_I,4);
         resolution = num_list(list_I,9);
@@ -191,7 +177,7 @@ for list_I0 = 1:NN1
             else
                 dxx = [];
             end
-            overlayP = find_overlap(imcorr1,[folder_name,file_list{list_I,1},tile_name,num2str(I_tile,'%02u'),'/'],[folder_name,file_list{list_I,1},tile_name,num2str(I_tile+1,'%02u'),'/'],delta,match_channel,offset0,dxx)
+            overlayP = find_overlap(imcorr1,[folder_name,file_list{list_I,1},tile_name,num2str(I_tile,'%02u'),'/'],[folder_name,file_list{list_I,1},tile_name,num2str(varargin{3}+1,'%02u'),'/'],delta,match_channel,offset0,dxx)
         end
         
 %         dx0 = round(overlayP*max(corr1_size));
@@ -206,7 +192,8 @@ for list_I0 = 1:NN1
         dy = (dy0-dx_range):(dy0+dx_range);
         dy2 = dy-dy(end);
 
-        dz0 = (-dz_range):dz_range;
+        dz = (-dz_range):dz_range;
+        idz0 = (length(dz)+1)/2;
         
         dx_max = dx0*ones(Nbin); dx_max(1) = 0;
         dy_max = dy0*ones(Nbin(1),1); dy_max(1) = 0;
@@ -238,36 +225,22 @@ for list_I0 = 1:NN1
             imlist1 = dir([folder_name,file_list{list_I,1},sub_folder1,image_tail]); %%% get the image list from image folder1
             N_Z = length(imlist1);
             Istd1 = zeros(N_Z,1);   %%% standard deviation of the left stack
-            Istd2 = zeros(N_Z,1);   %%% standard deviation of the left stack
-            Imean1 = zeros(N_Z,1);   %%% mean of the left stack
-            Imean2 = zeros(N_Z,1);   %%% mean deviation of the left stack
 
             for I_layer = 1:N_Z
                 im_temp = imread([folder_name,file_list{list_I,1},sub_folder1,imlist1(I_layer).name]);
-                im_temp = im_temp(1+delta(1):end-delta(1),1+delta(2):end-delta(2),:);
+                %im_temp = im_temp(1+delta(1):end-delta(1),1+delta(2):end-delta(2),:);
 
                 if I_layer == 1
                     inimage{1} = zeros([size(im_temp),N_Z],'uint16');
                 end
 
-                inimage{1}(:,:,:,I_layer) = uint16(double(im_temp-offset0)./imcorr1);
+                %inimage{1}(:,:,:,I_layer) = uint16(double(im_temp-offset0)./imcorr1);
+                inimage{1}(:,:,:,I_layer) = uint16(double(im_temp));
             end
                 
             %%%% Matching: ----------------------------------------------------
             for I_X = 1:Nbin(2)-1
                 I_series = I_series+1;
-                
-                if ismember(I_series,I_dz0-1)
-                    dz0now = 0;
-                else
-                    dz0now = dz0;
-                end
-                
-                if isempty(dz10)
-                    dz = dz0now;
-                else
-                    dz = dz0now+dz10(I_Y,I_X+1);
-                end
 
                 sub_folder2 = [tile_name,num2str(I_series+1,'%02u'),'/'];
                 for I_layer = 1:N_Z
@@ -280,15 +253,11 @@ for list_I0 = 1:NN1
                     inimage{I_X+1}(:,:,:,I_layer) = uint16(double(im_temp-offset0)./imcorr1);
 
                     Istd1(I_layer) = std2(inimage{I_X}(:,Nx-dx(end)+1:Nx,match_channel,I_layer));
-                    Istd2(I_layer) = std2(inimage{I_X+1}(:,1:dx(end),match_channel,I_layer));
-                    Imean1(I_layer) = mean2(inimage{I_X}(:,Nx-dx(end)+1:Nx,match_channel,I_layer));
-                    Imean2(I_layer) = mean2(inimage{I_X+1}(:,1:dx(end),match_channel,I_layer));
+%                     Istd2(I_layer) = std2(inimage(:,1:dx(end),match_channel,I_layer,I_X+1));
                 end
 
-% %                 [max00,Icontrast1] = max(Istd1);
-% %                 [~,Icontrast2] = max(Istd2);
-                [max00,Icontrast1] = max(Imean1);
-                [~,Icontrast2] = max(Imean2);
+                [max00,Icontrast1] = max(Istd1);
+%                 [~,Icontrast2] = max(Istd2);
                 Isel = Icontrast1;
 
                 if length(dx) > 1 || length(dz) > 1
@@ -311,7 +280,7 @@ for list_I0 = 1:NN1
                             [ix0,iz0] = ind2sub(size(corr_tile),ind0);
                         else
                             ix0 = idx0;
-                            iz0 = (length(dz0now)+1)/2;
+                            iz0 = idz0;
                             empty_id(I_Y,I_X+1) = true;
                         end
                         dx_max(I_Y,I_X+1) = dx(ix0);
@@ -323,11 +292,6 @@ for list_I0 = 1:NN1
                         iz0 = find(dz_max(I_Y,I_X+1) == dz);
     %                     dI_max(I_Y,I_X+1) = gather(sum(sum(inimage{I_X+1}(:,1:dx_max(I_Y,I_X+1),match_channel,Isel+dz_max(I_Y,I_X+1))))/sum(sum(im1(:,(1-dx_max(I_Y,I_X+1)+dx(end)):dx(end),match_channel,Isel))));
                     end
-                    
-% %                     if ismember(I_series,I_dz0-1)
-% %                         iz0 = find(dz == 0);
-% %                         dz_max(I_Y,I_X+1) = 0;
-% %                     end
                     
                     dI_max(I_Y,I_X+1) = gather(sum(sum(im2(:,1:(Nx2+dx2(ix0)),1,Isel+dz(iz0))))/sum(sum(im1(:,(1-dx2(ix0)):Nx2,1,Isel))));
                 end
@@ -343,6 +307,7 @@ for list_I0 = 1:NN1
             
             I_layer0 = I_layer;
             outimage0{I_Y} = inimage{1}(:,:,:,I_layer0);
+            outimage_20X{I_Y} = inimage{1}(:,:,:,I_layer0);
 
             for I_X = 2:Nbin(2)
                 I_layer0 = I_layer0+dz_max(I_Y,I_X);
@@ -361,15 +326,14 @@ for list_I0 = 1:NN1
 %         outimage = uint16(zeros(0));
 
 %         if Nbin(1) > 1
-        if (length(dy) > 1 || length(dz0) > 1) && Nbin(1) > 1
+        if (length(dy) > 1 || length(dz) > 1) && Nbin(1) > 1
             for I_Y = 1:Nbin(1)-1
                 j1 = max(round(size(outimage0{I_Y},2)*p_start),1);
-                j21 = round(size(outimage0{I_Y},2)*p_end);
-                j22 = round(size(outimage0{I_Y+1},2)*p_end);
-                im1 = gpuArray(outimage0{I_Y}(Ny-dy(end)+1:Ny,j1:j21,match_channel,:));
-                im2 = gpuArray(outimage0{I_Y+1}(1:dy(end),j1:j22,match_channel,:));
-% %                 im1 = gpuArray(outimage0{I_Y}(Ny-dy(end)+1:Ny,:,match_channel,:));
-% %                 im2 = gpuArray(outimage0{I_Y+1}(1:dy(end),:,match_channel,:));
+                j2 = round(size(outimage0{I_Y},2)*p_end);
+%                 im1 = gpuArray(outimage0{I_Y}(Ny-dy(end)+1:Ny,j1:j2,match_channel,:));
+%                 im2 = gpuArray(outimage0{I_Y+1}(1:dy(end),j1:j2,match_channel,:));
+                im1 = gpuArray(outimage0{I_Y}(Ny-dy(end)+1:Ny,:,match_channel,:));
+                im2 = gpuArray(outimage0{I_Y+1}(1:dy(end),:,match_channel,:));
 
                 N_Z1 = size(im1,4);
                 N_Z2 = size(im2,4);
@@ -393,23 +357,17 @@ for list_I0 = 1:NN1
                 Is2_start = fliplr(Is1_start);
                 Is1_end = min(Ns1,Ns2-ds);
                 Is2_end = min(Ns1+ds,Ns2);
-                
-                if isempty(dz20)
-                    dz2 = dz0;
-                else
-                    dz2 = dz0+dz20(I_Y+1);
-                end
 
                 if ~(load_old && exist([folder_name,file_list{list_I,1}(1:(end-1)),old_add,para_name,mat_tail]))
-                    corr_tile = gpuArray(-inf(size(dy,2),size(ds,2),size(dz2,2),'single'));
+                    corr_tile = gpuArray(-inf(size(dy,2),size(ds,2),size(dz,2),'single'));
 
     %                 pool_name = parpool(size(ds,2));
 
                     for is = 1:size(ds,2)
                         for ix = 1:size(dy,2)
-                            for iz = 1:size(dz2,2)
-                                if Isel+dz2(iz) >= 1 && Isel+dz2(iz) <= N_Z2
-                                    corr_tile(ix,is,iz) = corr2(im1((1-dy2(ix)):Ny2,Is1_start(is):Is1_end(is),1,Isel),im2(1:(Ny2+dy2(ix)),Is2_start(is):Is2_end(is),1,Isel+dz2(iz)));
+                            for iz = 1:size(dz,2)
+                                if Isel+dz(iz) >= 1 && Isel+dz(iz) <= N_Z2
+                                    corr_tile(ix,is,iz) = corr2(im1((1-dy2(ix)):Ny2,Is1_start(is):Is1_end(is),1,Isel),im2(1:(Ny2+dy2(ix)),Is2_start(is):Is2_end(is),1,Isel+dz(iz)));
                                 end
                             end
                         end
@@ -421,7 +379,7 @@ for list_I0 = 1:NN1
                     [ix0,is0,iz0] = ind2sub(size(corr_tile),ind0);
                     dy_max(I_Y+1) = dy(ix0);
                     ds2_max(I_Y+1) = ds(is0);
-                    dz2_max(I_Y+1) = dz2(iz0);
+                    dz2_max(I_Y+1) = dz(iz0);
                 else
                     dy_max(I_Y+1) = y_start0(I_Y+1,1)-1;
                     ds2_max(I_Y+1) = x_start0(I_Y+1,1)-x_start0(I_Y,1);
@@ -429,10 +387,10 @@ for list_I0 = 1:NN1
                     
                     ix0 = find(dy_max(I_Y+1) == dy);
                     is0 = find(ds2_max(I_Y+1) == ds);
-                    iz0 = find(dz2_max(I_Y+1) == dz2);
+                    iz0 = find(dz2_max(I_Y+1) == dz);
                 end
                 
-                dI2_max(I_Y+1) = gather(sum(sum(im2(1:(Ny2+dy2(ix0)),Is2_start(is0):Is2_end(is0),1,Isel+dz2(iz0))))/sum(sum(im1((1-dy2(ix0)):Ny2,Is1_start(is0):Is1_end(is0),1,Isel))));
+                dI2_max(I_Y+1) = gather(sum(sum(im2(1:(Ny2+dy2(ix0)),Is2_start(is0):Is2_end(is0),1,Isel+dz(iz0))))/sum(sum(im1((1-dy2(ix0)):Ny2,Is1_start(is0):Is1_end(is0),1,Isel))));
             end
             
             I_Y = Nbin(1);
@@ -480,7 +438,8 @@ for list_I0 = 1:NN1
         for Iz = 1:length(I_layer)
             I_layer0 = I_layer(Iz);
             I_Y = 1;
-            outimage = outimage0{I_Y}(:,Is_start(I_Y):Is_end(I_Y),:,I_layer0);
+            %outimage = outimage0{I_Y}(:,Is_start(I_Y):Is_end(I_Y),:,I_layer0);
+            outimage = outimage_20X{I_Y}(:,:,:,I_layer0);
 
             for I_Y = 2:Nbin(1)
                 I_layer0 = I_layer0+dz2_max(I_Y);
@@ -494,6 +453,7 @@ for list_I0 = 1:NN1
             end
             im_name = [tif_name,num2str(Iz,'%02u'),figure_tail];
 %                 imwrite(outimage,[folder_name,out_name,imlist1(I_layer).name]);
+            
             tiffwrite0(outimage,[folder_name,out_name,im_name]);
         end
         %%%% --------------------------------------------------------------
@@ -546,13 +506,13 @@ function overlayP = find_overlap(imcorr1,folder1,folder2,delta,match_channel,off
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 image_tail = '*.tif';
-overlayP0 = 0.25;
+overlayP0 = 0.20;
 if isempty(dxx0)
     dxx = 5;
 else
     dxx = dxx0;
 end
-dz_range = 30;
+dz_range = 10;
 acc0 = 1000; %%% accuracy
 
 Nx = size(imcorr1,2);
@@ -566,7 +526,6 @@ dz = (-dz_range):dz_range;
 imlist1 = dir([folder1,image_tail]); %%% get the image list from image folder1
 N_Z = length(imlist1);
 Istd1 = zeros(N_Z,1);   %%% standard deviation of the left stack
-Imean1 = zeros(N_Z,1);   %%% mean of the left stack
 inimage1 = zeros([size(imcorr1,1),size(imcorr1,2),N_Z]);
 inimage2 = zeros([size(imcorr1,1),size(imcorr1,2),N_Z]);
 
@@ -576,7 +535,6 @@ for I_layer = 1:N_Z
     im_temp = imread([folder2,imlist1(I_layer).name]);
     inimage2(:,:,I_layer) = im_temp(1+delta(1):end-delta(1),1+delta(2):end-delta(2),match_channel);
     Istd1(I_layer) = std2(inimage2(:,Nx-dx(end)+1:Nx,I_layer));
-    Imean1(I_layer) = mean2(inimage2(:,Nx-dx(end)+1:Nx,I_layer));
 end
 inimage1 = uint16(double(inimage1-offset0)./repmat(imcorr1(:,:,match_channel),1,1,N_Z));
 inimage2 = uint16(double(inimage2-offset0)./repmat(imcorr1(:,:,match_channel),1,1,N_Z));
@@ -584,8 +542,7 @@ inimage2 = uint16(double(inimage2-offset0)./repmat(imcorr1(:,:,match_channel),1,
 
 
 %% Matching: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% [~,Icontrast1] = max(Istd1);
-[~,Icontrast1] = max(Imean1);
+[~,Icontrast1] = max(Istd1);
 Isel = Icontrast1;
 
 im1 = gpuArray(inimage1(:,Nx-dx(end)+1:Nx,:));
