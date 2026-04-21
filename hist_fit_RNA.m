@@ -18,8 +18,8 @@ close all
 
 sub_folder = 'Histogram_A/';
 sub_folder2 = 'Histogram_P/';
-% sub_folder = 'Histogram_A_RNA2/';
-% sub_folder2 = 'Histogram_P_RNA2/';
+% % sub_folder = 'Histogram_A_RNA2/';
+% % sub_folder2 = 'Histogram_P_RNA2/';
 % sub_folder = 'Histogram_A_gal4/';
 r_th = 0;
 % % % sub_folder_nullo = 'Histogram_default/';
@@ -28,7 +28,7 @@ input_name = 'matchlist.xls';
 data_tail = '_raw.xls';
 data_tail2 = '_raw.xlsx';
 show_tail = '_foci_th.fig';
-output_add = '_spot_fit_new2';
+output_add = '_spot_fit';
 mat_tail = '.mat';
 fig_tail = '.fig';
 hist0_min = 0;
@@ -39,34 +39,24 @@ fit0_lower = [0,0,0,0,300,0];
 fit0_higher = [1,500,150,0.5,2000,2000];
 
 hist_min = 0; 
-hist_max = 2e5;
-hist_bin = 1.5e3;
-binw2 = 0.6e3;
+hist_max = 0.6e5;
+hist_bin = 0.4e3;
+binw2 = 0.2e3;
 
 % % fit_initial = [0.035,0.001,0.0001,0.0001,3e4,3e4,0,0.01,8e3,8e3];
 % % fit_lower = [0,0,0,0,0,0,0,0,0,0];
 % % fit_higher = [0.5,0.5,0.5,0.5,5e4,5e4,1,0.5,1.2e4,1.2e4];
-% fit_initial = [0.035,0.01,0.005,0.001,2.5e4,2e4,0,0.01,0.7e4,0.5e4];
-% fit_lower = [0,0,0,0,0,0,0,0,0,0];
-% fit_higher = [0.5,0.5,0.5,0.5,4.5e4,4.5e4,1,0.1,1.5e4,1e4];
-% fit_initial = [0.035,0.01,0.005,0.001,0.000,2e4,2e4,0,0.01,1e4,1e4];
-% fit_lower = [0,0,0,0,0,0,0,0,0,0,0];
-% fit_higher = [1,1,1,1,0,0.4e5,0.4e5,1,1,0.6e4,0.6e4];
-% fit_range = [0,2e4];
-%% hb kr
-fit_initial = [0.035,0.01,0.005,0.001,0.001,5e4,5e4,0,0.1,2e4,2e4];
+% % % % fit_initial = [0.035,0.01,0.005,0.001,2.5e4,2e4,0,0.01,0.7e4,0.5e4];
+% % % % fit_lower = [0,0,0,0,0,0,0,0,0,0];
+% % % % fit_higher = [0.5,0.5,0.5,0.5,4.5e4,4.5e4,1,0.1,1.5e4,1e4];
+fit_initial = [0.035,0.01,0.005,0.001,0.001,1e4,1e4,0,0.1,0.3e4,0.3e4];
 fit_lower = [0,0,0,0,0,0,0,0,0,0,0];
-fit_higher = [0.5,0.5,0.5,0.5,0.5,10e4,10e4,1,1,5e4,5e4];
-fit_range = [0,2.5e5];
-% %% kni hcr
-% fit_initial = [0.035,0.01,0.005,0.001,0.001,10e4,10e4,0,0.1,5e4,5e4];
-% fit_lower = [0,0,0,0,0,0,0,0,0,0,0];
-% fit_higher = [0.5,0.5,0.5,0.5,0.5,20e4,20e4,1,1,10e4,10e4];
-% fit_range = [0,2e5];
+fit_higher = [0.5,0.5,0.5,0.5,0.5,1.5e4,1.5e4,1,1,0.6e4,0.6e4];
+fit_range = [0,2e5];
 
-xlim0 = [0,3.5e3];
-ylim0 = [0,6.5];
-bin3D = {0:0.6e2:3.5e3,0:0.1:6.5};
+xlim0 = [0,5e3];
+ylim0 = [0,5];
+bin3D = {0:7e1:5e3,0:0.05:5};
 % x_thresh0 = 175;
 
 if ~isempty(varargin) && ~isempty(varargin{1})
@@ -74,35 +64,19 @@ if ~isempty(varargin) && ~isempty(varargin{1})
     sub_folder2 = varargin{1}{2};
     
     if strcmp(sub_folder,'Histogram_A_RNA2/')
-%         hist_min = 0; 
-%         hist_max = 5e4;
-%         hist_bin = 0.3e3;
-%         binw2 = 0.15e3;
-% 
-%         fit_initial = [0.035,0.001,0.001,0.001,0.001,0.5e4,0.5e4,0,0.01,0.3e4,0.3e4];
-%         fit_lower = [0,0,0,0,0,0,0,0,0,0,0];
-%         fit_higher = [0.5,0.5,0.5,0.5,0.5,1.5e4,1.5e4,1,0.1,1e4,1e4];
-%         fit_range = [0,5e4];
-% 
-%         xlim0 = [0,0.4e3];
-%         ylim0 = [0,5];
-%         bin3D = {0:1e1:0.4e3,0:0.1:10};
-hist_min = 0; 
-hist_max = 2.5e5;
-hist_bin = 1.2e3;
-binw2 = 0.6e3;
+        hist_min = 0; 
+        hist_max = 5e4;
+        hist_bin = 0.3e3;
+        binw2 = 0.15e3;
 
-%% hb Kr
-fit_initial = [0.035,0.01,0.005,0.001,0.001,8e4,8e4,0,0.1,4e4,4e4];
-fit_lower = [0,0,0,0,0,0,0,0,0,0,0];
-fit_higher = [0.5,0.5,0.5,0.5,0.5,10e4,10e4,1,1,8e4,8e4];
-fit_range = [0,2e5];
+        fit_initial = [0.035,0.001,0.001,0.001,0.001,0.5e4,0.5e4,0,0.01,0.3e4,0.3e4];
+        fit_lower = [0,0,0,0,0,0,0,0,0,0,0];
+        fit_higher = [0.5,0.5,0.5,0.5,0.5,1.5e4,1.5e4,1,0.1,1e4,1e4];
+        fit_range = [0,5e4];
 
-
-
-xlim0 = [0,1.5e4];
-ylim0 = [0,6.5];
-bin3D = {0:1e2:1.5e4,0:0.1:6.5};
+        xlim0 = [0,5e2];
+        ylim0 = [0,10];
+        bin3D = {0:4e0:1e3,0:0.1:10};
     end
 end
 
@@ -136,7 +110,7 @@ for list_I = 1:N1
     [M1,M2] = size(sub_list);
     im_folder = folder_list{list_I,1};
         
-    for list_J = 2%1:M1
+    for list_J = 1:M1
         if ~is_show
             figure
             maximize(gcf)
@@ -218,21 +192,10 @@ for list_I = 1:N1
                         title('Please pick up the boundary');
         % %                 [x0,y0] = ginput(2);
         % %                 p0 = polyfit(y0,x0,1); 
-%                         [x0,~] = ginput(1);
-%                         p0(1) = 0; p0(2) = x0;
-%                     else
-%                         p0(1) = 0; p0(2) = Inten_lim;
-%                     end
-                    
-                       [x0,y0] = ginput(2);
-                       if length(x0) > 1
-                          p0 = polyfit(y0,x0,1); 
-                       else
-                          p0(1) = 0; p0(2) = x0;
-                       end
+                        [x0,~] = ginput(1);
+                        p0(1) = 0; p0(2) = x0;
                     else
-                     p0(1) = 0; p0(2) = Inten_lim;
-                     t_gate0 = true;
+                        p0(1) = 0; p0(2) = Inten_lim;
                     end
 
                     delete(h1);
