@@ -31,6 +31,9 @@ if isa(lf_name,'char') && strcmp(lf_name(end-3:end),'.xls')
     list_name = lf_name;
     [num_list, folder_list] = xlsread(list_name);
     folder_list = folder_list(strcmpi('T',folder_list(:,6)),:);
+    pathname=replace(lf_name,'Duallist.xls','');
+    folder_new=cellfun(@(x) [pathname,x],folder_list(:,1),'UniformOutput',false);
+%     folder_list(:,1)=folder_new;
 elseif isa(lf_name,'cell')
     folder_list = lf_name;
 else
@@ -65,6 +68,10 @@ for list_I = 1:N1
     
 %% LSM file loading/resave: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     lsm_name = dir([input_folder,lsm_type]);
+    if size(lsm_name,1)==0
+        input_folder = folder_new{list_I,1};
+        lsm_name = dir([input_folder,lsm_type]);
+    end
     if exist([input_folder,out_folder]) ~= 7
 %         mkdir([input_folder,out_folder]);
     end
@@ -105,8 +112,8 @@ for list_I = 1:N1
                 if exist([input_folder,out_folder,output_name,output_name2]) ~= 7
                     mkdir([input_folder,out_folder,output_name,output_name2]);
                 end
-%                 reader.setSeries((I_embryo-1)*N_S0+I_series-1);
-                reader.setSeries((I_embryo-1)+(I_series-1)*N_E);
+                 reader.setSeries((I_embryo-1)*N_S0+I_series-1);
+%                reader.setSeries((I_embryo-1)+(I_series-1)*N_E);
 
                 for I_T = 1:N_T
 
@@ -125,13 +132,13 @@ for list_I = 1:N1
                         if size(tiff_image,3) == 2
                             tiff_image(:,:,3) = tiff_image(:,:,2);
                         end
+%                         if size(tiff_image,3) == 3
+%                             tiff_image(:,:,4) = tiff_image(:,:,2);
+%                         end
 %%% Image output: %%% -------------------------------------------------
-                        out_num = num2str(I_layer,'%02u');
-                        out_stack = [tif_name,out_num,figure_tail];
-                        if N_T > 1
-                            out_num = num2str(I_T,'%04u');
-                            out_stack = [time_name,out_num,out_stack];
-                        end
+                        out_num1 = num2str(I_layer,'%02u');
+                        out_num2 = num2str(I_T,'%04u');
+                        out_stack = [time_name,out_num2,[tif_name,out_num1,figure_tail]];
                         tiffwrite0(tiff_image,[input_folder,out_folder,output_name,output_name2,out_stack]);
 %%% -------------------------------------------------------------------
                     end
@@ -181,6 +188,7 @@ for list_I = 1:N1
     try
         xlswrite([input_folder,out_folder,match_file],cat(2,file_name,num2cell(file_num)));
     catch
-        xlwrite([input_folder,out_folder,match_file],cat(2,file_name,num2cell(file_num)));
+%         xlwrite([input_folder,out_folder,match_file],cat(2,file_name,num2cell(file_num)));
+        writecell(cat(2,file_name,num2cell(file_num)),[input_folder,out_folder,match_file]);
     end
 end

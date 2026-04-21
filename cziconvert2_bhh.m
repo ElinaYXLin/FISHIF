@@ -66,7 +66,7 @@ for list_I = 1:N1
 %% LSM file loading/resave: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     lsm_name = dir([input_folder,lsm_type]);
     if exist([input_folder,out_folder]) ~= 7
-%         mkdir([input_folder,out_folder]);
+        mkdir([input_folder,out_folder]);
     end
 
     file_name = cell(length(lsm_name),3);
@@ -105,8 +105,8 @@ for list_I = 1:N1
                 if exist([input_folder,out_folder,output_name,output_name2]) ~= 7
                     mkdir([input_folder,out_folder,output_name,output_name2]);
                 end
-%                 reader.setSeries((I_embryo-1)*N_S0+I_series-1);
-                reader.setSeries((I_embryo-1)+(I_series-1)*N_E);
+                reader.setSeries((I_embryo-1)*N_S0+I_series-1);
+%                 reader.setSeries((I_embryo-1)+(I_series-1)*N_E);
 
                 for I_T = 1:N_T
 
@@ -163,12 +163,9 @@ for list_I = 1:N1
             omeMeta = reader.getMetadataStore();
             voxelSizeX = omeMeta.getPixelsPhysicalSizeX(0).value(ome.units.UNITS.MICROMETER); % in µm
             resolution = voxelSizeX.doubleValue();
-            try
-                voxelSizeZ = omeMeta.getPixelsPhysicalSizeZ(0).value(ome.units.UNITS.MICROMETER); % in µm
-                resolutionz = voxelSizeZ.doubleValue();        
-            catch
-                resolutionz = 0;        
-            end
+            voxelSizeZ = omeMeta.getPixelsPhysicalSizeZ(0).value(ome.units.UNITS.MICROMETER); % in µm
+            resolutionz = voxelSizeZ.doubleValue();        
+
             file_num(output_I,:) = [match_layer,Ntile,match_channel,compare_ratio,WGA_channel,DAPI_channel,signal1_channel,resolution,signal2_channel,resolutionz,signal3_channel];
     %         file_num(output_I,:) = [match_layer,Nbin,Mdim,match_channel,compare_ratio,WGA_channel,DAPI_channel,signal1_channel,resolution,signal2_channel,resolutionz,signal3_channel];
 %%% =======================================================================

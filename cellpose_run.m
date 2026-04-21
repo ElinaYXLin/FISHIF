@@ -1,0 +1,1 @@
+python -m cellpose --dir 'E:\data\wjy_data\10222021\10262021_PE_hb1_tmr_hb7_647_yell_HCR488_60X_2021_10_25__21_19_07_003_new\raw2input'  --pretrained_model cyto2 --chan 0 --diameter 0. --use_gpu 
