@@ -75,7 +75,7 @@ if get(handles.ch1,'Value')
     hist_folder = 'Histogram/';
     hist_folder_single = 'Histogram_A/';
     channel_name = 'RNA_channel';
-    channel2_name = 'signal2_channel';
+    channel2_name = 'DAPI_channel';%'signal2_channel'
 %     channel_name = 'protein_channel';
 else
 %     hist_folder = ['Histogram_alignment',channel2_add,'/'];
@@ -1020,18 +1020,18 @@ function overlay = im_overlay(im_now,foci_im,del_im,add_im,mask2D,handles)
 foci_per = bwperim(foci_im);
 del_per = bwperim(del_im);
 add_per = bwperim(add_im);
-mask_per = bwperim(mask2D);
+mask_per = 0.5*bwperim(mask2D);
 
 overlay(:,:,1) = im_now(:,:,1)+foci_per-del_per;
 % if size(im_now,3) > 1
 %     overlay(:,:,2) = 0.7*get(handles.ref_on,'Value')*im_now(:,:,2)+foci_per-del_per+add_per+0.5*mask_per;
 % else
-    overlay(:,:,2) = foci_per-del_per+add_per+0.5*mask_per;
+    overlay(:,:,2) = foci_per-del_per+add_per+mask_per;
 % end
 if size(im_now,3) > 1
-    overlay(:,:,3) = str2num(get(handles.Ref_max,'String'))*get(handles.ref_on,'Value')*im_now(:,:,2)+foci_per+del_per+0.5*mask_per;
+    overlay(:,:,3) = str2num(get(handles.Ref_max,'String'))*get(handles.ref_on,'Value')*im_now(:,:,2)+foci_per+del_per+mask_per;
 else
-    overlay(:,:,3) = foci_per+del_per+0.5*mask_per;
+    overlay(:,:,3) = foci_per+del_per+mask_per;
 end
 
 

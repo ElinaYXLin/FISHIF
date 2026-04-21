@@ -1,35 +1,35 @@
-function varargout = stack_protein_new4(varargin)
-% STACK_PROTEIN_NEW4 M-file for stack_protein_new4.fig
-%      STACK_PROTEIN_NEW4, by itself, creates a new STACK_PROTEIN_NEW4 or raises the existing
+function varargout = stack_protein(varargin)
+% STACK_PROTEIN M-file for stack_protein.fig
+%      STACK_PROTEIN, by itself, creates a new STACK_PROTEIN or raises the existing
 %      singleton*.
 %
-%      H = STACK_PROTEIN_NEW4 returns the handle to a new STACK_PROTEIN_NEW4 or the handle to
+%      H = STACK_PROTEIN returns the handle to a new STACK_PROTEIN or the handle to
 %      the existing singleton*.
 %
-%      STACK_PROTEIN_NEW4('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in STACK_PROTEIN_NEW4.M with the given input arguments.
+%      STACK_PROTEIN('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in STACK_PROTEIN.M with the given input arguments.
 %
-%      STACK_PROTEIN_NEW4('Property','Value',...) creates a new STACK_PROTEIN_NEW4 or raises the
+%      STACK_PROTEIN('Property','Value',...) creates a new STACK_PROTEIN or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before stack_protein_new4_OpeningFcn gets called.  An
+%      applied to the GUI before stack_protein_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to stack_protein_new4_OpeningFcn via varargin.
+%      stop.  All inputs are passed to stack_protein_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help stack_protein_new4
+% Edit the above text to modify the response to help stack_protein
 
-% Last Modified by GUIDE v2.5 24-Nov-2018 11:16:19
+% Last Modified by GUIDE v2.5 21-May-2011 12:20:24
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @stack_protein_new4_OpeningFcn, ...
-                   'gui_OutputFcn',  @stack_protein_new4_OutputFcn, ...
+                   'gui_OpeningFcn', @stack_protein_OpeningFcn, ...
+                   'gui_OutputFcn',  @stack_protein_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -44,14 +44,14 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before stack_protein_new4 is made visible.
-function stack_protein_new4_OpeningFcn(hObject, eventdata, handles, varargin)
+% --- Executes just before stack_protein is made visible.
+function stack_protein_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to stack_protein_new4 (see VARARGIN)
-global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast bk_label sub_folder bk_name sg_name stack_th stack_th0
+% varargin   command line arguments to stack_protein (see VARARGIN)
+global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast bk_label sub_folder bk_name sg_name
 
 %% Default value setting: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 dlayer = 1;
@@ -61,42 +61,22 @@ dfsize = 1.5;
 dimthresh = 0.01;
 dmask = true;
 dpeak = true;
-stack_th0 = 0;
-stack_th = stack_th0;
 bk_label = 'OreR';
 mstatus = {'Mask on','Mask off'};
-resolution0 = 0.083;
+resolution0 = 0.13;
 limsize = [0,10];
 limthresh = [0,1];
 limcontrast = [0,1];
-old_add = '_old';
-if get(handles.type_Anterior,'Value')
-    sub_folder = 'Histogram_protein_A/';
-elseif get(handles.type_Posterior,'Value')
-    sub_folder = 'Histogram_protein_P/';
-elseif get(handles.type_Median,'Value')
-    sub_folder = 'Histogram_protein_M/';
-elseif get(handles.type_Anterior2,'Value')
-    sub_folder = ['Histogram_protein2_A/'];
-elseif get(handles.type_Posterior2,'Value')
-    sub_folder = ['Histogram_protein2_P/'];
-else
-    sub_folder = ['Histogram_protein2_M/'];
-end
-current_handle = get(handles.ana_type,'SelectedObject');
+sub_folder = 'Histogram/';
 bk_name = 'bk_record.xls';
 sg_name = 'signal_record.xls';
 set(handles.show_bk,'Value',false);
 set(handles.presult_on,'Value',true);
-set(handles.Fitted_on,'Value',false);
-set(handles.ana_type,'SelectionChangeFcn',@ana_type_SelectionChangeFcn);
-set(handles.Inten_th,'String','');
-%set(handles.type_Anterior,'Value',false);
 % set(handles.sigma_show,'Color','none');
 % set(handles.sigma_zoom,'Color','none');
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Choose default command line output for stack_protein_new4
+% Choose default command line output for stack_protein
 handles.output = hObject;
 set(hObject,'Resize','On');
 %load_file_Callback(hObject, eventdata, handles)
@@ -105,24 +85,12 @@ set(gcf,'WindowButtonDownFcn',{@ButttonDownFcn2});
 % Update handles structure
 guidata(hObject, handles);
 
-% if ~isempty(varargin)
-%     if length(varargin) > 1
-%         set(handles.type_Posterior,'Value',varargin{2});
-%     end
-%     if get(handles.type_Posterior,'Value')
-%         sub_folder = 'Histogram_A/';
-%     else
-%         sub_folder = 'Histogram/';
-%     end
-%     guidata(hObject, handles);
-%     hist_auto_Callback(hObject, eventdata, handles, varargin{1});
-% end
-% UIWAIT makes stack_protein_new4 wait for user response (see UIRESUME)
+% UIWAIT makes stack_protein wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = stack_protein_new4_OutputFcn(hObject, eventdata, handles) 
+function varargout = stack_protein_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -144,14 +112,25 @@ function layer_slide_Callback(hObject, eventdata, handles)
 % hObject    handle to layer_slide (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast
+global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast mask_num
 vlayer = floor(get(handles.layer_slide,'Value'));
 set(handles.layer_value,'String', num2str(vlayer));
 
-overlay = cf_show1(imstack,g,vlayer,vimthresh,vpeak,vcontrast,vcontrmin,vmask,get(handles.Fitted_on,'Value'));
+overlay = cf_show1(imstack,g,vlayer,vimthresh,vpeak,vcontrast,vcontrmin,vmask);
 axes(handles.stack_show);
 v = axis; 
 imshow(overlay)
+
+hold on
+if ~isempty(mask_num)
+    layer_num = mask_num(mask_num(:,4) == vlayer,:);
+    plot(layer_num(:,3),layer_num(:,2),'*g','MarkerSize',5)
+    for inum = 1:size(layer_num,1)
+        text(layer_num(inum,3),layer_num(inum,2)+1,num2str(layer_num(inum,1)),'Color','g') 
+    end
+end
+hold off
+
 axis(v);
 % Update handles structure
 guidata(hObject, handles);
@@ -176,7 +155,7 @@ function layer_value_Callback(hObject, eventdata, handles)
 % hObject    handle to layer_value (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast
+global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast mask_num
 minT = get(handles.layer_slide,'Min');
 maxT = get(handles.layer_slide,'Max');
 vlayer = floor(str2num(get(handles.layer_value,'String')));
@@ -188,10 +167,21 @@ end
 set(handles.layer_slide,'Value',vlayer);
 set(handles.layer_value,'String',num2str(vlayer));
 
-overlay = cf_show1(imstack,g,vlayer,vimthresh,vpeak,vcontrast,vcontrmin,vmask,get(handles.Fitted_on,'Value'));
+overlay = cf_show1(imstack,g,vlayer,vimthresh,vpeak,vcontrast,vcontrmin,vmask);
 axes(handles.stack_show);
 v = axis; 
 imshow(overlay)
+
+hold on
+if ~isempty(mask_num)
+    layer_num = mask_num(mask_num(:,4) == vlayer,:);
+    plot(layer_num(:,3),layer_num(:,2),'*g','MarkerSize',5)
+    for inum = 1:size(layer_num,1)
+        text(layer_num(inum,3),layer_num(inum,2)+1,num2str(layer_num(inum,1)),'Color','g') 
+    end
+end
+hold off
+
 axis(v);
 % Update handles structure
 guidata(hObject, handles);
@@ -217,7 +207,7 @@ function fsize_Callback(hObject, eventdata, handles)
 % hObject    handle to fsize (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast
+global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast mask_num
 minT = limsize(1);
 maxT = limsize(2);
 vfsize = str2num(get(handles.fsize,'String'));
@@ -228,10 +218,21 @@ elseif vfsize > maxT
 end
 set(handles.fsize,'String',num2str(vfsize));
 
-[overlay,g] = cf_show(imstack,vlayer,vfsize,L_ratio,vimthresh,vpeak,vcontrast,vcontrmin,vmask,get(handles.Fitted_on,'Value'));
+[overlay,g] = cf_show(imstack,vlayer,vfsize,L_ratio,vimthresh,vpeak,vcontrast,vcontrmin,vmask);
 axes(handles.stack_show);
 v = axis; 
 imshow(overlay)
+
+hold on
+if ~isempty(mask_num)
+    layer_num = mask_num(mask_num(:,4) == vlayer,:);
+    plot(layer_num(:,3),layer_num(:,2),'*g','MarkerSize',5)
+    for inum = 1:size(layer_num,1)
+        text(layer_num(inum,3),layer_num(inum,2)+1,num2str(layer_num(inum,1)),'Color','g') 
+    end
+end
+hold off
+
 axis(v);
 % Update handles structure
 guidata(hObject, handles);
@@ -257,7 +258,7 @@ function imthresh_Callback(hObject, eventdata, handles)
 % hObject    handle to imthresh (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast
+global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast mask_num
 minT = limthresh(1);
 maxT = limthresh(2);
 vimthresh = str2num(get(handles.imthresh,'String'));
@@ -268,10 +269,21 @@ elseif vimthresh > maxT
 end
 set(handles.imthresh,'String',num2str(vimthresh));
 
-overlay = cf_show1(imstack,g,vlayer,vimthresh,vpeak,vcontrast,vcontrmin,vmask,get(handles.Fitted_on,'Value'));
+overlay = cf_show1(imstack,g,vlayer,vimthresh,vpeak,vcontrast,vcontrmin,vmask);
 axes(handles.stack_show);
 v = axis; 
 imshow(overlay)
+
+hold on
+if ~isempty(mask_num)
+    layer_num = mask_num(mask_num(:,4) == vlayer,:);
+    plot(layer_num(:,3),layer_num(:,2),'*g','MarkerSize',5)
+    for inum = 1:size(layer_num,1)
+        text(layer_num(inum,3),layer_num(inum,2)+1,num2str(layer_num(inum,1)),'Color','g') 
+    end
+end
+hold off
+
 axis(v);
 % Update handles structure
 guidata(hObject, handles);
@@ -298,11 +310,12 @@ function load_file_Callback(hObject, eventdata, handles, varargin)
 % hObject    handle to load_file (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global xylim em_mask t_full imstack imstack0 immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast max_spot n0 xout0 n xout imname imfolder bk_label bk_use mask_out stack_th mask_stack
-imstack = zeros(0,'uint16');
-imstack0 = zeros(0,'uint16');
+global imstack imstack0 immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast max_spot n0 xout0 n xout imname imfolder bk_label bk_use mask_out seg_bw mask_num
+imstack = zeros(0);
+imstack0 = zeros(0);
 immask = false(0);
 max_spot = zeros(0);
+mask_num = zeros(0);
 n0 = zeros(0);
 xout0 = zeros(0);
 n = zeros(0);
@@ -314,6 +327,8 @@ global standard_data
 standard_data = load(standard_record);
 list_name = 'matchlist.xls';
 image_tail = '*.tif';
+out_folder = 'Results/';
+mat_tail = '.mat';
 
 %% Image stack loading: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if isempty(varargin)
@@ -321,6 +336,12 @@ if isempty(varargin)
     imname = imfolder(find((imfolder == '/') | (imfolder == '\'),1,'last')+1:end);
     imfolder = imfolder(1:find((imfolder == '/') | (imfolder == '\'),1,'last'));
 end
+
+%%% Nuclei mask loading: %%% ==============================================
+    result_folder = [imfolder(1:find((imfolder(1:(end-1)) == '/') | (imfolder(1:(end-1)) == '\'),1,'last')),out_folder];
+    load([result_folder,imname,mat_tail],'seg_bw');
+%%% =======================================================================
+
 [num_list, file_list] = xlsread([imfolder,list_name]);
 I_file = strcmp([imname,'/'],file_list(:,3));
 I_file = I_file | strcmp([imname,'\'],file_list(:,3));
@@ -331,165 +352,36 @@ guidata(hObject, handles);
 
 lsm_stack = dir([imfolder,imname,'/',image_tail]); %%% image file list loading
 resolution = num_list(I_file,9);
-if get(handles.type_Anterior,'Value') || get(handles.type_Posterior,'Value') || get(handles.type_Median,'Value')
-%     RNA_channel = num_list(I_file,10); %%% RNA channel
-    RNA_channel = num_list(I_file,8);
-else
-    RNA_channel = num_list(I_file,12); %%% Signal2 channel
-%     RNA_channel = num_list(I_file,10); %%% Signal2 channel
-end
+% protein_channel = num_list(I_file,10);
+protein_channel = num_list(I_file,8);
 L_ratio = (resolution/resolution0);
 
 immax = length(lsm_stack);
 tempmax = zeros(1,immax);
 
+% % %%%%% Intensity correction mask generation: ---------------------------
+% % temp0 = imread([imfolder,imname,'/',lsm_stack(1).name]);
+% % minsize = min(size(temp0(:,:,1)));
+% % corr_size = [minsize*[1,1],1];
+% % imcorr = corr_mask(corr_size,{'A633'},resolution);
+% % %%%%% -----------------------------------------------------------------
+
 for I_layer = 1:immax
     temp0 = imread([imfolder,imname,'/',lsm_stack(I_layer).name]);
-    imstack0 = cat(3,imstack0,temp0(:,:,RNA_channel));
+    temp = temp0(:,:,protein_channel);
+%     temp = uint16(double(temp)./repmat(imcorr,size(temp)./minsize));
+    imstack0(:,:,I_layer) = temp;
+    imstack(:,:,I_layer) = imfilter(temp,fspecial('gaussian',5,1),'symmetric','conv');
+    tempmax(I_layer) = max(max(imstack(:,:,I_layer)));
 end
-imstack = imfilter(imstack0,fspecial('gaussian',3,1),'symmetric','conv');
-tempmax(:) = max(max(imstack));
 
-%imstack0 = imstack0(ceil(size(imstack0,1)*1/4):ceil(size(imstack0,1)*3/4),ceil(size(imstack0,2)*1/4):ceil(size(imstack0,2)*3/4),:);
-%imstack  = imstack(ceil(size(imstack,1)*1/4):ceil(size(imstack,1)*3/4),ceil(size(imstack,2)*1/4):ceil(size(imstack,2)*3/4),:);
-
-    try
-        load([imfolder(1:find((imfolder(1:end-1) == '/') | (imfolder(1:end-1) == '\'),1,'last')),'masks/',imname,'/mask.mat']);
-        t_mask = true;
-    catch
-        mask_stack = true(size(imstack));
-        t_mask = false;
-    end
-    
-    S = load([imfolder(1:find((imfolder(1:end-1) == '/') | (imfolder(1:end-1) == '\'),1,'last')),'Results/',imname,'.mat'],'em_mask');
-    t_em = isfield(S, 'em_mask');
-    if t_em
-        em_mask = S.em_mask;
-    else
-        em_mask = imdilate(bwconvhull(max(logical(mask_stack),[],3)),strel('disk',20));
-%         em_mask = max(logical(mask_stack),[],3);
-    end
-
-    rxmin1 = 3/16;
-    rxmax1 = 5/16;
-    rymin1 = 3/16;
-    rymax1 = 5/16;
-
-    rxmin2 = 1-rxmax1;%6/16;
-    rxmax2 = 1-rxmin1;%2/16;
-    rymin2 = 1-rymin1;%2/8;
-    rymax2 = 1-rymax1;%6/8;
-
-    rxmin3 = 7/16;
-    rxmax3 = 9/16;
-    rymin3 = 7/16;
-    rymax3 = 9/16;
-
-    if (~t_mask) && (~t_em)
-        mask1D = max(max(logical(mask_stack),[],3),[],1);
-        ELmin = find(mask1D,1);
-        ELmax = find(mask1D,1,'last');
-        
-        xmin1 = round(ELmin+(ELmax-ELmin)*rxmin1);
-        xmax1 = round(ELmin+(ELmax-ELmin)*rxmax1);
-        ymin1 = round(rymin1*size(imstack,1));
-        ymax1 = round(rymax1*size(imstack,1));
-
-        xmin2 = round(ELmin+(ELmax-ELmin)*rxmin2);
-        xmax2 = round(ELmin+(ELmax-ELmin)*rxmax2);
-        ymin2 = round(rymin2*size(imstack,1));
-        ymax2 = round(rymax2*size(imstack,1));
-
-        xmin3 = round(ELmin+(ELmax-ELmin)*rxmin3);
-        xmax3 = round(ELmin+(ELmax-ELmin)*rxmax3);
-        ymin3 = round(rymin3*size(imstack,1));
-        ymax3 = round(rymax3*size(imstack,1));
-    else
-        EL_info = get_EL(em_mask);
-
-        L0=[EL_info(1) EL_info(2)];
-        L1=[EL_info(3) EL_info(4)];
-        L2=L0-L1;
-        La=L1+L2*0.14;%0.14
-        Lm=L1+L2*0.5;
-        Lp=L1+L2*0.86;%0.86
-        if abs(L2(2))>abs(L2(1))
-            Lwide1 =size(imstack,2)/6;%10
-            Lwide2 =size(imstack,1)/8;%12
-        else
-            Lwide1 =size(imstack,2)/8;
-            Lwide2 =size(imstack,1)/6;
-        end
-
-        
-        xmin1=max(La(1)-Lwide1,1);
-        xmax1=min(La(1)+Lwide1,size(imstack,2));
-        ymin1=max(La(2)-Lwide2,1);
-        ymax1=min(La(2)+Lwide2,size(imstack,1));
-
-        xmin2=max(Lp(1)-Lwide1,1);
-        xmax2=min(Lp(1)+Lwide1,size(imstack,2));
-        ymin2=max(Lp(2)-Lwide2,1);
-        ymax2=min(Lp(2)+Lwide2,size(imstack,1));
-
-        xmin3=max(Lm(1)-Lwide1,1);
-        xmax3=min(Lm(1)+Lwide1,size(imstack,2));
-        ymin3=max(Lm(2)-Lwide2,1);
-        ymax3=min(Lm(2)+Lwide2,size(imstack,1));
-
-
-        % x00 = round(EL_info(1)+(EL_info(3)-EL_info(1))*(rxmin1+rxmax1)/2);
-        %     xmin1 = max(x00-round(max(EL_info(3)-EL_info(1),size(imstack,2)/2)*(rxmax1-rxmin1)/2),1);
-        %     xmax1 = min(x00+round(max(EL_info(3)-EL_info(1),size(imstack,2)/2)*(rxmax1-rxmin1)/2),size(imstack,2));
-        % y00 = round(EL_info(2)+(EL_info(4)-EL_info(2))*(rxmin1+rxmax1)/2);
-        %     ymin1 = max(y00-round(max(EL_info(4)-EL_info(2),size(imstack,1)/2)*(rymax1-rymin1)/2),1);
-        %     ymax1 = min(y00+round(max(EL_info(4)-EL_info(2),size(imstack,1)/2)*(rymax1-rymin1)/2),size(imstack,1));
-        % 
-        % x00 = round(EL_info(1)+(EL_info(3)-EL_info(1))*(rxmin2+rxmax2)/2);
-        %     xmin2 = max(x00-round(max(EL_info(3)-EL_info(1),size(imstack,2)/2)*(rxmax2-rxmin2)/2),1);
-        %     xmax2 = min(x00+round(max(EL_info(3)-EL_info(1),size(imstack,2)/2)*(rxmax2-rxmin2)/2),size(imstack,2));
-        % y00 = round(EL_info(2)+(EL_info(4)-EL_info(2))*(rxmin2+rxmax2)/2);
-        %     ymin2 = max(y00-round(max(EL_info(4)-EL_info(2),size(imstack,1)/2)*(rymax2-rymin2)/2),1);
-        %     ymax2 = min(y00+round(max(EL_info(4)-EL_info(2),size(imstack,1)/2)*(rymax2-rymin2)/2),size(imstack,1));
-        % 
-        % x00 = round(EL_info(1)+(EL_info(3)-EL_info(1))*(rxmin3+rxmax3)/2);
-        %     xmin3 = max(x00-round(max(EL_info(3)-EL_info(1),size(imstack,2)/2)*(rxmax3-rxmin3)/2),1);
-        %     xmax3 = min(x00+round(max(EL_info(3)-EL_info(1),size(imstack,2)/2)*(rxmax3-rxmin3)/2),size(imstack,2));
-        % y00 = round(EL_info(2)+(EL_info(4)-EL_info(2))*(rxmin3+rxmax3)/2);
-        %     ymin3 = max(y00-round(max(EL_info(4)-EL_info(2),size(imstack,1)/2)*(rymax3-rymin3)/2),1);
-        %     ymax3 = min(y00+round(max(EL_info(4)-EL_info(2),size(imstack,1)/2)*(rymax3-rymin3)/2),size(imstack,1));
-    end
-
-    Itrue = mean(mean(mean(imstack0(ymin1:ymax1,xmin1:xmax1,:)))) >= mean(mean(mean(imstack0(ymin2:ymax2,xmin2:xmax2,:))));
-    if get(handles.type_Median,'Value') || get(handles.type_Median2,'Value')
-        imstack0 = imstack0(ymin3:ymax3,xmin3:xmax3,:);
-        imstack  = imstack(ymin3:ymax3,xmin3:xmax3,:);
-        mask_stack  = mask_stack(ymin3:ymax3,xmin3:xmax3,:);
-        em_mask = em_mask(ymin3:ymax3,xmin3:xmax3);
-        xylim = [ymin3,ymax3,xmin3,xmax3];
-    elseif ~xor(Itrue , get(handles.type_Anterior,'Value') | get(handles.type_Anterior2,'Value'))
-        imstack0 = imstack0(ymin1:ymax1,xmin1:xmax1,:);
-        imstack  = imstack(ymin1:ymax1,xmin1:xmax1,:);
-        mask_stack  = mask_stack(ymin1:ymax1,xmin1:xmax1,:);
-        em_mask = em_mask(ymin1:ymax1,xmin1:xmax1);
-        xylim = [ymin1,ymax1,xmin1,xmax1];
-    else
-        imstack0 = imstack0(ymin2:ymax2,xmin2:xmax2,:);
-        imstack  = imstack(ymin2:ymax2,xmin2:xmax2,:);
-        mask_stack  = mask_stack(ymin2:ymax2,xmin2:xmax2,:);
-        em_mask = em_mask(ymin2:ymax2,xmin2:xmax2);
-        xylim = [ymin2,ymax2,xmin2,xmax2];
-    end
-    % mask_stack = true(size(imstack));
-
-
-temp0 = fspecial('gaussian',5,1);
+temp0 = fspecial('gaussian',5,0.3);
 kernel0 = zeros(1,1,5);
-kernel0(1,1,:) = temp0(3,:)./sum(temp0(3,:));
+kernel0(1,1,:) = temp0(3,:);
 imstack = imfilter(imstack,kernel0,'symmetric','conv');
 
-imstack = single(imstack)/65535;   %%% Normalization
-% imstack0 = double(imstack0);
+imstack = double(imstack)/65535;   %%% Normalization
+imstack0 = double(imstack0);
 immask = false(size(immask));
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -524,12 +416,21 @@ set(handles.Peak_on,'Value',vpeak);
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Image output: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% mask_out = spmask(imstack,1,stack_th);   %%% 3D local maximal mask generation (Primary filter)
-%mask_out = mask_out & (imstack*65535 >= 7000);   %%% Prefilter using peak intensity threshold
-mask_out = false(size(imstack));
-[overlay,g] = cf_show(imstack,vlayer,vfsize,L_ratio,vimthresh,vpeak,vcontrast,vcontrmin,vmask,get(handles.Fitted_on,'Value'));
+mask_out = spmask(imstack,1);   %%% 3D local maximal mask generation (Primary filter)
+mask_out = mask_out & (~repmat(bwmorph(seg_bw,'thicken',5),[1,1,size(mask_out,3)]));   %%% Get local peaks outside nuclei
+[overlay,g] = cf_show(imstack,vlayer,vfsize,L_ratio,vimthresh,vpeak,vcontrast,vcontrmin,vmask);
 axes(handles.stack_show);
 imshow(overlay)
+
+hold on
+if ~isempty(mask_num)
+    layer_num = mask_num(mask_num(:,4) == vlayer,:);
+    plot(layer_num(:,3),layer_num(:,2),'*g','MarkerSize',5)
+    for inum = 1:size(layer_num,1)
+        text(layer_num(inum,3),layer_num(inum,2)+1,num2str(layer_num(inum,1)),'Color','g') 
+    end
+end
+hold off
 
 axes(handles.hist_show);
 cla
@@ -550,14 +451,25 @@ function Mask_status_Callback(hObject, eventdata, handles)
 % hObject    handle to Mask_status (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast
+global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast mask_num
 vmask = get(handles.Mask_status,'Value');
 set(handles.Mask_status,'String',mstatus{vmask+1});
 
-overlay = cf_show1(imstack,g,vlayer,vimthresh,vpeak,vcontrast,vcontrmin,vmask,get(handles.Fitted_on,'Value'));
+overlay = cf_show1(imstack,g,vlayer,vimthresh,vpeak,vcontrast,vcontrmin,vmask);
 axes(handles.stack_show);
 v = axis; 
 imshow(overlay)
+
+hold on
+if ~isempty(mask_num)
+    layer_num = mask_num(mask_num(:,4) == vlayer,:);
+    plot(layer_num(:,3),layer_num(:,2),'*g','MarkerSize',5)
+    for inum = 1:size(layer_num,1)
+        text(layer_num(inum,3),layer_num(inum,2)+1,num2str(layer_num(inum,1)),'Color','g') 
+    end
+end
+hold off
+
 axis(v);
 % Update handles structure
 guidata(hObject, handles);
@@ -571,7 +483,7 @@ function contrast_value_Callback(hObject, eventdata, handles)
 % hObject    handle to contrast_value (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast
+global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast mask_num
 minT = limcontrast(1);
 maxT = limcontrast(2);
 vcontrast = str2num(get(handles.contrast_value,'String'));
@@ -582,10 +494,21 @@ elseif vcontrast > maxT
 end
 set(handles.contrast_value,'String',num2str(vcontrast));
 
-overlay = cf_show1(imstack,g,vlayer,vimthresh,vpeak,vcontrast,vcontrmin,vmask,get(handles.Fitted_on,'Value'));
+overlay = cf_show1(imstack,g,vlayer,vimthresh,vpeak,vcontrast,vcontrmin,vmask);
 axes(handles.stack_show);
 v = axis; 
 imshow(overlay)
+
+hold on
+if ~isempty(mask_num)
+    layer_num = mask_num(mask_num(:,4) == vlayer,:);
+    plot(layer_num(:,3),layer_num(:,2),'*g','MarkerSize',5)
+    for inum = 1:size(layer_num,1)
+        text(layer_num(inum,3),layer_num(inum,2)+1,num2str(layer_num(inum,1)),'Color','g') 
+    end
+end
+hold off
+
 axis(v);
 % Update handles structure
 guidata(hObject, handles);
@@ -611,7 +534,7 @@ function contrast_min_Callback(hObject, eventdata, handles)
 % hObject    handle to contrast_min (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast
+global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast mask_num
 minT = limcontrast(1);
 maxT = vcontrast;
 vcontrmin = str2num(get(handles.contrast_min,'String'));
@@ -622,10 +545,21 @@ elseif vcontrmin > maxT
 end
 set(handles.contrast_min,'String',num2str(vcontrmin));
 
-overlay = cf_show1(imstack,g,vlayer,vimthresh,vpeak,vcontrast,vcontrmin,vmask,get(handles.Fitted_on,'Value'));
+overlay = cf_show1(imstack,g,vlayer,vimthresh,vpeak,vcontrast,vcontrmin,vmask);
 axes(handles.stack_show);
 v = axis; 
 imshow(overlay)
+
+hold on
+if ~isempty(mask_num)
+    layer_num = mask_num(mask_num(:,4) == vlayer,:);
+    plot(layer_num(:,3),layer_num(:,2),'*g','MarkerSize',5)
+    for inum = 1:size(layer_num,1)
+        text(layer_num(inum,3),layer_num(inum,2)+1,num2str(layer_num(inum,1)),'Color','g') 
+    end
+end
+hold off
+
 axis(v);
 % Update handles structure
 guidata(hObject, handles);
@@ -656,96 +590,39 @@ function hist_on_Callback(hObject, eventdata, handles)
 % hObject    handle to hist_on (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global imstack imstack0 embryo_mask immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast max_spot n0 xout0 n xout sg_name bk_use imname imfolder sub_folder mask_out m_data stack_th stack_th0 RNA_mask lim t0 dt0 mask_stack old_add em_mask 
+global imstack imstack0 immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast max_spot n0 xout0 n xout sg_name bk_use imname imfolder sub_folder mask_out m_data seg_bw mask_num
 n = zeros(0);
 xout = zeros(0);
-low_th = 0;
-% lim = [0:10:500];
-rxy = 10;
-rz = 10;
-xrange = max(5,round(2/L_ratio));
-zrange = max(2,round(1/L_ratio));
 set(handles.hist_on,'String','Wait')
 guidata(hObject, handles);
+
 xls_tail = '.xls';
-xls_tailb = '.xlsx';
 xls_name2 = [imname,'_raw',xls_tail];
-xls_name2b = [imname,'_raw',xls_tailb];
 k0 = strfind(imfolder,'stacks');
 imfolder0 = imfolder(1:(k0(end)-1));
 
-if get(handles.type_Posterior,'Value') || get(handles.type_Posterior2,'Value')
-    lim = [0:10:2000];
-    decrease_th = 0.9^((lim(2)-lim(1))/20);
-%     [stack_th,t0,dt0] = th_find_low(spmask1(imstack,1),lim,decrease_th,low_th);
-    [mask_out,mask_out2D] = spmask1(imstack,1);   %%% 3D local maximal mask generation (Primary filter)
-    [stack_th,t0,dt0] = th_find_low(mask_out,lim,decrease_th,low_th);
-else
-	lim = [100:100:8000];
-    decrease_th = 0.85^((lim(2)-lim(1))/200);
-%     [stack_th,t0,dt0] = th_find(spmask1(imstack,1),lim,decrease_th,low_th);
-    [mask_out,mask_out2D] = spmask1(imstack,1);   %%% 3D local maximal mask generation (Primary filter)
-    [stack_th,t0,dt0] = th_find(mask_out,lim,decrease_th,low_th);
-end
-
-% [~,temp_I] = findpeaks(dt0);
-% stack_th = lim(temp_I(1));
-% % [n_hist,~] = hist(imstack(mask_out)*65535,lim);
-% % [~,temp_I] = findpeaks(-n_hist);
-% % if isempty(temp_I)
-% %     temp_I = 1;
-% % end
-% % stack_th = lim(temp_I(1));
-
-temp_th0 = str2num(get(handles.Inten_th,'String'));
-if ~isempty(temp_th0)
-    stack_th = temp_th0;
-end
-% stack_th = 2000;
-% stack_th = 1100;
-% stack_th = 340;
-% stack_th = 0;
-
+disp([imfolder,imname])
 if get(handles.presult_on,'Value') && exist([imfolder0,sub_folder,xls_name2],'file')
     [max_spot,~,~] = xlsread([imfolder0,sub_folder,xls_name2]);
-%     max_spot = spfilter(max_spot,rxy,rxy,1);   %%% Fine filter to get rid of noise
-elseif get(handles.presult_on,'Value') && exist([imfolder0,sub_folder,xls_name2b],'file')
-    [max_spot,~,~] = xlsread([imfolder0,sub_folder,xls_name2b]);
-%     max_spot = spfilter(max_spot,rxy,rxy,1);   %%% Fine filter to get rid of noise
+    max_spot = spfilter(max_spot);   %%% Fine filter to get rid of noise
 else
     % for I_layer = 1:get(handles.layer_slide,'Max')
     %     immask(:,:,I_layer) = im2bw(g(:,:,I_layer),vimthresh);
     % end
     % STATS = regionprops(immask,imstack*65535,'MaxIntensity');
     % max_spot = imstack(imregionalmax(g)&immask)*65535;
-% %     [mask_out,mask_out2D] = spmask1(imstack,1,stack_th,[],0);   %%% 3D local maximal mask generation (Primary filter)
-    %mask_out = mask_out & (imstack*65535 >= 4000);   %%% Prefilter using peak intensity threshold
+    mask_out = spmask(imstack,1);   %%% 3D local maximal mask generation (Primary filter)
+    mask_out = mask_out & (~repmat(bwmorph(seg_bw,'thicken',5),[1,1,size(mask_out,3)]));   %%% Get local peaks outside nuclei
+    %mask_out = mask_out & (imstack*65535 >= 8000);   %%% Prefilter using peak intensity threshold
     % max_spot = imstack(mask_out)*65535;
-    mask_out2D = mask_out2D | mask_out;
-    mask_out = mask_out & (imstack*65535 >= stack_th);
-    mask_out2D = mask_out2D & (~mask_out) & (imstack*65535 >= stack_th);
+    peak_parameter = ptrack(imstack0,imstack,mask_out);   %%% Track/fit mRNA spots
+    max_spot = spfilter(peak_parameter);   %%% Fine filter to get rid of noise
+end
 
-%     embryo_mask = repmat(imdilate(bwconvhull(max(logical(mask_stack),[],3)),strel('disk',20)),[1,1,size(mask_out,3)]);
-    embryo_mask = repmat(em_mask,[1,1,size(mask_out,3)]);
-    embryo_mask = embryo_mask & (~imdilate(mask_stack,strel('disk',2)));
-    mask_out = mask_out & embryo_mask;
-    mask_out2D = false(size(mask_out2D)) & embryo_mask;
-
-    peak_parameter = ptrack(imstack0,imstack,mask_out,mask_out2D,0,xrange);   %%% Track/fit mRNA spots
-% %     [peak_parameter,~] = ptrack3D(double(imstack0),double(imstack),mask_out,[],0,[xrange,xrange,zrange]);   %%% Track/fit mRNA spots
-% %     peak_parameter = ptrack3D2(imstack0,imstack,mask_out,[],0);   %%% Track/fit mRNA spots
-% %     max_spot = spfilter(peak_parameter,rxy,rxy,1,[],[0.5,5]);   %%% Fine filter to get rid of noise
-    max_spot = spfilter(peak_parameter,rxy,rxy,1);   %%% Fine filter to get rid of noise
+if size(max_spot,2) >= 8
+    mask_num = [[1:size(max_spot,1)]',max_spot(:,6:8)];    
 end
 M_spot = max_spot(:,1).*max_spot(:,2).*max_spot(:,3)*2*pi;
-
-RNA_mask = false(size(imstack,1),size(imstack,2),size(imstack,3));
-% for ii = 1:size(max_spot,1)
-    x_spot = min(max(round(max_spot(:,6)),1),size(imstack,1));
-    y_spot = min(max(round(max_spot(:,7)),1),size(imstack,2));
-    z_spot = min(max(round(max_spot(:,8)),1),size(imstack,3));
-    RNA_mask(sub2ind(size(imstack),x_spot,y_spot,z_spot)) = true;
-% end
 
 %% Background calculation: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if get(handles.show_bk,'Value') && ~get(handles.background_on,'Value')
@@ -809,16 +686,14 @@ xlim0 = xlim;
 % legend('Sigma x','Sigma y','Sigma z')
 %%% =======================================================================
 axes(handles.hist_zoom);
-% low_th = 60000;
-% low_bin = 500;
-% low_th2 = 50000;
-% low_bin2 = 5000;
-low_th = 1.01e5;
-low_bin = 1e3;
-low_th2 = 1e5;
-low_bin2 = 5e3;
+low_th = 101000;
+low_bin = 1000;
+low_th2 = 100000;
+low_bin2 = 5000;
 
 [n,xout] = hist(M_spot,[0:low_bin:low_th]);
+n = n(1:(end-1));
+xout = xout(1:(end-1));
 %[n,xout] = hist(M_spot(:,1),[0:1000:60000]);
 %n = n/sum(n)*100;
 bar(xout,n)
@@ -833,14 +708,12 @@ if get(handles.show_bk,'Value') && ~isempty(n_bk)
 end
 xlim([0,low_th2]);
 %xlim([0,10000]);
-set(gca,'XTick',[0:low_bin2:low_th2])%,'YScale','log')
+set(gca,'XTick',[0:low_bin2:low_th2],'YScale','log')
 %set(gca,'XTick',[0:5000:50000],'YScale','log')
 
 ylabel('#')
 ylim0 = ylim;
-if ylim0(1) > 1 
-    ylim0(1) = 1;
-end
+ylim0(1) = 1;
 ylim(ylim0);
 xlim0 = xlim;
 
@@ -849,10 +722,24 @@ m_temp = M_spot(M_spot(:,1)<low_th,1);
 m_mean = mean(m_temp);
 m_std = std(m_temp);
 m_median = median(m_temp);
-m_peak = xout(find(n == max(n(1:(end-1))),1));
+m_peak = xout(find(n == max(n),1));
 m_p =  1./(48/(m_mean/m_std)^2+1);
 m_data = [m_mean,m_std,m_median,m_peak,m_p];
-set(handles.text_input,'String',['Low intensity zoom in (mean = ',num2str(m_mean),', std = ',num2str(m_std),', median = ',num2str(m_median),', peak = ',num2str(m_peak),', p0 = ',num2str(m_p)])
+
+r_bin = 0.1;
+r_max = 3+r_bin;
+[nrx,rxout] = hist(max_spot(:,2),[0:r_bin:r_max]);
+nrx = nrx(1:(end-1));
+rxout = rxout(1:(end-1));
+rx_peak = rxout(find(nrx == max(nrx),1));
+
+[nry,ryout] = hist(max_spot(:,3),[0:r_bin:r_max]);
+nry = nry(1:(end-1));
+ryout = ryout(1:(end-1));
+ry_peak = ryout(find(nry == max(nry),1));
+
+
+set(handles.text_input,'String',['Low intensity zoom in (mean = ',num2str(m_mean),', std = ',num2str(m_std),', median = ',num2str(m_median),', peak = ',num2str(m_peak),', p0 = ',num2str(m_p),', r_x = ',num2str(rx_peak),', r_y = ',num2str(ry_peak)])
 
 %%%%% ---------------------------------------------------------------------
 %axes(handles.sigma_zoom);
@@ -877,13 +764,24 @@ function Peak_on_Callback(hObject, eventdata, handles)
 % hObject    handle to Peak_on (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast max_spot
+global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast max_spot mask_num
 vpeak = get(handles.Peak_on,'Value');
 
-overlay = cf_show1(imstack,g,vlayer,vimthresh,vpeak,vcontrast,vcontrmin,vmask,get(handles.Fitted_on,'Value'));
+overlay = cf_show1(imstack,g,vlayer,vimthresh,vpeak,vcontrast,vcontrmin,vmask);
 axes(handles.stack_show);
 v = axis; 
 imshow(overlay)
+
+hold on
+if ~isempty(mask_num)
+    layer_num = mask_num(mask_num(:,4) == vlayer,:);
+    plot(layer_num(:,3),layer_num(:,2),'*g','MarkerSize',5)
+    for inum = 1:size(layer_num,1)
+        text(layer_num(inum,3),layer_num(inum,2)+1,num2str(layer_num(inum,1)),'Color','g') 
+    end
+end
+hold off
+
 axis(v);
 % Update handles structure
 guidata(hObject, handles);
@@ -898,18 +796,15 @@ function hist_save_Callback(hObject, eventdata, handles)
 % hObject    handle to hist_save (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global xylim imstack0 imstack embryo_mask immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast imname imfolder n0 xout0 n xout bk_name sg_name bk_use sub_folder max_spot m_data stack_th lim t0 dt0
+global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast imname imfolder n0 xout0 n xout bk_name sg_name bk_use sub_folder max_spot m_data
 hist_tail = '.fig';
 tif_tail = '.tif';
 xls_tail = '.xls';
-xls_tail2 = '.xlsx';
 hist_name = [imname,hist_tail];
 tif_name = [imname,tif_tail];
 xls_name0 = [imname,'_all',xls_tail];
 xls_name1 = [imname,'_low',xls_tail];
 xls_name2 = [imname,'_raw',xls_tail];
-xls_name2b = [imname,'_raw',xls_tail2];
-area_name = [imname,'_mask_area.mat'];
 k0 = strfind(imfolder,'stacks');
 imfolder0 = imfolder(1:(k0(end)-1));
 
@@ -917,23 +812,12 @@ imfolder0 = imfolder(1:(k0(end)-1));
 if ~exist([imfolder0,sub_folder],'dir')
     mkdir([imfolder0,sub_folder]);
 end
-% hgsave([imfolder0,sub_folder,hist_name]);
+hgsave([imfolder0,sub_folder,hist_name]);
 saveas(gcf,[imfolder0,sub_folder,tif_name]);
-save([imfolder0,sub_folder,area_name],'embryo_mask','xylim');
 if ~isempty(n0)
     xlswrite([imfolder0,sub_folder,xls_name0],[n0',xout0']);
     xlswrite([imfolder0,sub_folder,xls_name1],[n',xout']);
-    if exist([imfolder0,sub_folder,xls_name2])
-        delete([imfolder0,sub_folder,xls_name2])
-    end
-    if exist([imfolder0,sub_folder,xls_name2b])
-        delete([imfolder0,sub_folder,xls_name2b])
-    end
-    try
-        xlswrite([imfolder0,sub_folder,xls_name2],max_spot);
-    catch
-        xlswrite([imfolder0,sub_folder,xls_name2b],max_spot);
-    end
+    xlswrite([imfolder0,sub_folder,xls_name2],max_spot);
     %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     %% Save the record: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -992,54 +876,6 @@ if ~isempty(n0)
     %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
 
-
-%%% Foci recognition output: %%% ==========================================
-foci_add = '_foci';
-seg_add = '_seg';
-figure_tail = '.fig';
-out_folder = 'Results/';
-result_folder = [imfolder(1:find((imfolder(1:(end-1)) == '/')|(imfolder(1:(end-1)) == '\'),1,'last')),out_folder];
-foci_bw = false(size(imstack0,1),size(imstack0,2));
-
-for ii = 1:size(max_spot,1)
-    x_spot = min(max(round(max_spot(ii,6)),1),size(imstack,1));
-    y_spot = min(max(round(max_spot(ii,7)),1),size(imstack,2));
-    foci_bw(x_spot,y_spot) = true;
-end
-
-foci_bw0 = imdilate(foci_bw,strel('disk',4));
-bw_perim_g = bwperim(foci_bw0);
-%bw_perim_WGA = bwperim(seg_bw);
-new_image(:,:,1) = max(imstack0,[],3)./max(max(max(imstack0,[],3)));
-new_image(:,:,2) = 0;
-new_image(:,:,3) = 0;
-overlay = imoverlay(new_image, bw_perim_g, [1,1,1]);
-%overlay = imoverlay(overlay,bw_perim_WGA,[0,0,1]);
-
-figure(4)
-imshow(overlay)
-title([result_folder,imname,', white: transcription foci recognition'],'Interpreter','none')
-saveas(4,[imfolder0,sub_folder,imname,foci_add,seg_add,figure_tail]);
-close(4)
-%%% =======================================================================
-
-
-%%% Foci recognition mask selection: %%% ==================================
-th_add = '_th';
-figure(3)
-[AX,H1,H2] = plotyy(lim,t0,lim,dt0);
-hold on
-plot(stack_th*[1,1],ylim,'--')
-title(['Threshold - # profile and the selected threshold value (',imfolder0,') threshold = ',num2str(stack_th)],'Interpreter','none')
-xlabel('Threshold value (A.U.)')
-set(get(AX(1),'Ylabel'),'String','#') 
-set(get(AX(2),'Ylabel'),'String','#/#') 
-%legend('# of recognized regions','#(n)/#(n-1)','Threshold value')
-saveas(3,[imfolder0,sub_folder,imname,foci_add,th_add,figure_tail]);
-close(3)
-%%% =======================================================================
-
-
 % Update handles structure
 guidata(hObject, handles);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1049,7 +885,7 @@ guidata(hObject, handles);
 
 
 % --- Executes on button press in hist_auto.
-function hist_auto_Callback(hObject, eventdata, handles)%, varargin)
+function hist_auto_Callback(hObject, eventdata, handles)
 % hObject    handle to hist_auto (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -1060,42 +896,18 @@ set(handles.hist_auto,'String','Busy');
 % Update handles structure
 guidata(hObject, handles);
 
-%imfolder = uigetdir;
-% if isempty(varargin)
-    imfolder_list = uigetfile_n_dir;
-% else
-%     imfolder_list = varargin{1};
-% end
+imfolder = uigetdir;
+imfolder = [imfolder,'/stacks/'];
+[~,file_list] = xlsread([imfolder,list_name]);
 
-for I_folder = 1:length(imfolder_list)
-    imfolder = imfolder_list{I_folder};
-    if ~(imfolder(end) == '/' || imfolder(end) == '\')
-        imfolder = [imfolder,'/'];
-    end
-    
-    I_cut = strfind(imfolder,'stacks');
-    if I_cut
-        imname = imfolder(I_cut+7:end-1);
-        imfolder = imfolder(1:I_cut+6);
-        set(handles.Fitted_on,'Value',false);
+if size(file_list,1) > 0
+    for I_file = 1:size(file_list,1)
+        imname = file_list{I_file,3};
+        imname = imname(1:(end-1));
         load_file_Callback(hObject, eventdata, handles, true);
         hist_on_Callback(hObject, eventdata, handles);
         hist_save_Callback(hObject, eventdata, handles);
-    else           
-        imfolder = [imfolder,'stacks/'];
-        [~,file_list] = xlsread([imfolder,list_name]);
-        if size(file_list,1) > 0
-            for I_file = 1:size(file_list,1)
-                imname = file_list{I_file,3};
-                imname = imname(1:(end-1));
-                set(handles.Fitted_on,'Value',false);
-                load_file_Callback(hObject, eventdata, handles, true);
-                hist_on_Callback(hObject, eventdata, handles);
-                hist_save_Callback(hObject, eventdata, handles);
-            end
-        end
     end
-    
 end
 
 set(handles.hist_auto,'String','Auto');
@@ -1169,180 +981,21 @@ function presult_on_Callback(hObject, eventdata, handles)
 
 
 
-% --- Executes on button press in Fitted_on.
-function Fitted_on_Callback(hObject, eventdata, handles)
-% hObject    handle to Fitted_on (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-
-
-
 
 function ButttonDownFcn2(src,event)
-global imstack0 imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast mask_out max_spot
+global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast
 pt = get(gca,'CurrentPoint');
 x = floor(pt(1,1)+0.5);
 y = floor(pt(1,2)+0.5);
 xy_radius = 10;
 foci_sub = imstack((y-xy_radius):(y+xy_radius),(x-xy_radius):(x+xy_radius),vlayer)*65535;
-
-    temp_mask = false(size(mask_out));
-    temp_mask((y-xy_radius):(y+xy_radius),(x-xy_radius):(x+xy_radius),vlayer) = mask_out((y-xy_radius):(y+xy_radius),(x-xy_radius):(x+xy_radius),vlayer);
-    [peak_parameter,xf_all] = ptrack3D(double(imstack0),double(imstack),temp_mask);   %%% Track/fit mRNA spots
-    peak_parameter
-    peak_parameter(:,2:4)
-    temp_spot = spfilter(peak_parameter,10,10)   %%% Fine filter to get rid of noise
-    
 %[X,Y] = meshgrid([-xy_radius:xy_radius],[-xy_radius:xy_radius]);
 figure
 subplot(1,2,1)
     surf(foci_sub);
 subplot(1,2,2)
-    plot(reshape(imstack0(y,x,:),1,size(imstack0,3)),'ob')
-%     plot(reshape(imstack(y,x,:),1,size(imstack,3))*65535,'ob')
+    plot(reshape(imstack(y,x,:),1,size(imstack,3))*65535,'ob')
     hold on
-    plot(vlayer*[1,1],double(imstack0(y,x,vlayer))*[0,1],'--r')
-%     plot(vlayer*[1,1],imstack(y,x,vlayer)*65535*[0,1],'--r')
+    plot(vlayer*[1,1],imstack(y,x,vlayer)*65535*[0,1],'--r')
     hold off
     
-% % % fit_plot_cmp3D(xf_all,[y,x,vlayer],xy_radius,imstack0(:,:,vlayer));
-% fit_plot_cmp(xf_all,y,x,xy_radius,imstack0(:,:,vlayer));
-    
-    
-    
-
-function [stack_th,t0,dt0] = th_find(mask_out,lim,decrease_th,varargin)
-global imstack
-
-if ~isempty(varargin)
-    low_th = varargin{1};
-else
-    low_th = 0;
-end
-t0 = zeros(size(lim));
-all_spot = imstack(mask_out)*65535;
-for I_th = 1:length(lim)
-    t0(I_th) = nnz(all_spot >=lim(I_th));
-end
-dt0 = exp(diff(log(t0)));
-dt0(end+1) = nan;
-stack_th1 = lim(find((dt0 == max(dt0(lim >= low_th)) & (lim >= low_th)),1));
-
-[~,I0] = min(dt0(t0 > 10));
-I1 = find((dt0(I0:end) >= decrease_th) & (lim(I0:end) >= low_th),1)+I0-1;
-stack_th2 = lim(I1);
-
-if ~isempty(stack_th2)
-    stack_th = min(stack_th1,stack_th2);
-else
-    stack_th = stack_th1;
-end
-
-
-
-
-
-function [stack_th,t0,dt0] = th_find_low(mask_out,lim,decrease_th,varargin)
-global imstack
-
-if ~isempty(varargin)
-    low_th = varargin{1};
-else
-    low_th = 0;
-end
-t0 = zeros(size(lim));
-all_spot = imstack(mask_out)*65535;
-for I_th = 1:length(lim)
-    t0(I_th) = nnz(all_spot >=lim(I_th));
-end
-dt0 = diff(t0);
-dt0(end+1) = nan;
-
-H = fspecial('gaussian',10,4);
-[~,I0] = findpeaks(conv(dt0,H(5,:)/sum(H(5,:)),'same'));
-[~,I1] = findpeaks(conv(diff(conv(dt0,H(5,:)/sum(H(5,:)),'same')),H(5,:)/sum(H(5,:)),'same'));
-[~,I2] = findpeaks(-conv(diff(conv(dt0,H(5,:)/sum(H(5,:)),'same')),H(5,:)/sum(H(5,:)),'same'));
-lim1 = lim(I1(find(lim(I1) >= low_th,1))+2);
-if isempty(lim1)
-    lim1 = low_th;
-end
-lim2 = lim(I2(find(lim(I2) >= lim1,1))+2);
-if ~isempty(lim2)
-    lim0 = lim(I0(find(lim(I0) >= lim1 & lim(I0) <= lim2,1))+1);
-else
-    lim0 = zeros(0);
-end
-
-if ~isempty(lim0)
-    stack_th = lim0;
-else
-    stack_th = lim1;
-end
-
-
-
-
-
-function ana_type_SelectionChangeFcn(hObject, eventdata)
- 
-%retrieve GUI data, i.e. the handles structure
-handles = guidata(hObject); 
-global current_handle
-
-type_name = get(eventdata.NewValue,'Tag');
-switch_reply = questdlg(['Switch analysis type to ',type_name(find(type_name == '_',1)+1:end),'?']);
-
-if strcmp(switch_reply,'Yes')
-    stack_protein_new4_OpeningFcn(hObject, eventdata, handles)
-else
-% %     children_handle = get(handles.ana_type,'Children');
-% %     current_handle = get(handles.ana_type,'SelectedObject');
-% %     next_handle = children_handle(children_handle ~= current_handle);
-    set(handles.ana_type,'SelectedObject',current_handle)
-end
-%updates the handles structure
-guidata(hObject, handles);
-
-        
-
-
-
-function Inten_th_Callback(hObject, eventdata, handles)
-% hObject    handle to Inten_th (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of Inten_th as text
-%        str2double(get(hObject,'String')) returns contents of Inten_th as a double
-min_th = 0;
-max_th = 65535;
-temp_th0 = str2num(get(handles.Inten_th,'String'));
-if (isempty(temp_th0) || temp_th0 < min_th)
-    temp_th0 = zeros(0);
-elseif temp_th0 > max_th
-    temp_th0 = zeros(0);
-end
-set(handles.Inten_th,'String',num2str(temp_th0));
-
-% Update handles structure
-guidata(hObject, handles);
-
-
-
-
-% --- Executes during object creation, after setting all properties.
-function Inten_th_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Inten_th (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end

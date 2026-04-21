@@ -1,4 +1,4 @@
-function varargout = stack_RNA(varargin)
+function varargout = stack_RNA3(varargin)
 % STACK_RNA M-file for stack_RNA.fig
 %      STACK_RNA, by itself, creates a new STACK_RNA or raises the existing
 %      singleton*.
@@ -22,7 +22,7 @@ function varargout = stack_RNA(varargin)
 
 % Edit the above text to modify the response to help stack_RNA
 
-% Last Modified by GUIDE v2.5 13-Oct-2019 21:08:17
+% Last Modified by GUIDE v2.5 21-Apr-2022 19:40:25
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -51,7 +51,7 @@ function stack_RNA_OpeningFcn(hObject, eventdata, handles, varargin)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to stack_RNA (see VARARGIN)
-global t_full imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast bk_label sub_folder bk_name sg_name stack_th stack_th0 channel2_add current_handle old_add
+global t_full imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast bk_label sub_folder bk_name sg_name stack_th stack_th0 channel1_add channel2_add current_handle old_add
 
 %% Default value setting: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 dlayer = 1;
@@ -70,25 +70,27 @@ limsize = [0,10];
 limthresh = [0,1];
 limcontrast = [0,1];
 old_add = '_old';
-channel2_add = '_RNA2';
-% % channel3_add = '_RNA3';
+% channel1_add = '_TMR';
+% channel1_add = '_488';
+channel1_add ='_TMR';
+channel2_add = '_foci_A_647';
 t_full = false;
 
 if get(handles.type_single,'Value')
-    sub_folder = 'Histogram_A/';
+    sub_folder = ['Histogram_A',channel1_add,'/'];
 elseif get(handles.type_background,'Value')
-    sub_folder = 'Histogram_P/';
+    sub_folder = ['Histogram_P',channel1_add,'/'];
 elseif get(handles.type_foci,'Value')
-    sub_folder = 'Histogram/';
-% %     sub_folder = 'Histogram_foci_A/';
+    sub_folder = ['Histogram',channel1_add,'/'];
+% % % % % %     sub_folder = 'Histogram_foci_A/';
     
-% % if get(handles.type_single,'Value')
-% %     sub_folder = 'Histogram_A_488/';
-% % elseif get(handles.type_background,'Value')
-% %     sub_folder = 'Histogram_P_488/';
-% % elseif get(handles.type_foci,'Value')
-% %     sub_folder = 'Histogram_488/';
-
+% % % if get(handles.type_single,'Value')
+% % %     sub_folder = ['Histogram_A',channel1_add,'/'];
+% % % elseif get(handles.type_background,'Value')
+% % %     sub_folder = ['Histogram_P',channel1_add,'/'];
+% % % elseif get(handles.type_foci,'Value')
+% % %     sub_folder =  ['Histogram',channel1_add,'/'];
+% % 
 elseif get(handles.type_single2,'Value')
     sub_folder = ['Histogram_A',channel2_add,'/'];
 elseif get(handles.type_background2,'Value')
@@ -96,6 +98,7 @@ elseif get(handles.type_background2,'Value')
 else
     sub_folder = ['Histogram',channel2_add,'/'];
 end
+
 current_handle = get(handles.ana_type,'SelectedObject');
 bk_name = 'bk_record.xls';
 sg_name = 'signal_record.xls';
@@ -271,7 +274,7 @@ function imthresh_Callback(hObject, eventdata, handles)
 % hObject    handle to imthresh (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast
+global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh cycle12contrast
 minT = limthresh(1);
 maxT = limthresh(2);
 vimthresh = str2num(get(handles.imthresh,'String'));
@@ -347,16 +350,15 @@ lsm_stack = dir([imfolder,imname,'/',image_tail]); %%% image file list loading
 resolution = num_list(I_file,9);
 if get(handles.type_foci,'Value') || get(handles.type_single,'Value') || get(handles.type_background,'Value')
     RNA_channel = num_list(I_file,10); %%% RNA channel
-% % % %     RNA_channel = num_list(I_file,8);  %%% protein channel
+% %     RNA_channel = num_list(I_file,12);  %%% protein channel
 else
     RNA_channel = num_list(I_file,12); %%% Signal2 channel
-%     RNA_channel = num_list(I_file,10); %%% Signal2 channel
+% % %     RNA_channel = num_list(I_file,8); %%% Signal2 channel
 end
 L_ratio = (resolution/resolution0);
 
 immax = length(lsm_stack);
 tempmax = zeros(1,immax);
-
 for I_layer = 1:immax
     temp0 = imread([imfolder,imname,'/',lsm_stack(I_layer).name]);
     imstack0 = cat(3,imstack0,temp0(:,:,RNA_channel));
@@ -387,28 +389,77 @@ if ~t_full && (get(handles.type_single,'Value') || get(handles.type_single2,'Val
 %         em_mask = max(logical(mask_stack),[],3);
     end
     
+    rx0 = 0.7;%kni 
+    dx0 = 1/16;%kni
+    ry0 = 8/16;%kni
+    dy0 = 1.5/16;%kni
     
-    %% hb
-%     rxmin1 = 3/16;
-%     rxmax1 = 5/16;
-%     rymin1 = 6.5/16;
-%     rymax1 = 9.5/16;
-% 
+    rx1 = 0.3;%kni
+    ry1 = 8/16;%kni
+
+%     rx0 = 4/16;
+%     dx0 = 1/16;
+%     ry0 = 8/16;
+%     dy0 = 3/16;
+%     rx0 = 0.7;%kni 
+%     dx0 = 0.15;%kni
+%     ry0 = 8/16;%kni
+%     ry0 = 13/16;%kni
+%     dy0 = 3/16;%kni
+    
+%     rx1 = 0.3;%kni
+%     ry1 = 3/16;%kni
+%     ry1 = 8/16;%kni
+    
+     if (~t_mask) && (~t_em)
+        mask1D = max(max(logical(mask_stack),[],3),[],1);
+        ELmin = find(mask1D,1);
+        ELmax = find(mask1D,1,'last');
+        
+        Lx = ELmax-ELmin;
+        Ly = size(imstack,1);
+    else
+        EL_info = get_EL(em_mask);
+
+        Lx = max(EL_info(3)-EL_info(1),size(imstack,2)/2);
+        Ly = max(EL_info(4)-EL_info(2),size(imstack,1)/2);
+    end
+    
+    if Lx*dx0/Ly/dy0 > 2
+        dx0 = Ly*dy0/Lx;
+    elseif Lx*dx0/Ly/dy0 < 1/2
+        dy0 = Lx*dx0/Ly;
+    end 
+    
+    rxmin1 = rx0-dx0;
+    rxmax1 = rx0+dx0;
+    rymin1 = ry0-dy0;
+    rymax1 = ry0+dy0;
+    
+    rxmin2 = 1-rxmax1;%6/16;
+    rxmax2 = 1-rxmin1;%2/16;
+    rymin2 = rymin1;%2/8;
+    rymax2 = rymax1;%6/8;
+    
+%     rxmin1 = rx0-dx0;
+%     rxmax1 = rx0+dx0;
+%     rymin1 = ry0-dy0;
+%     rymax1 = ry0+dy0;
+%     
+%     rxmin2 = rx1-dx0;
+%     rxmax2 = rx1+dx0;
+%     rymin2 = ry1-dy0;
+%     rymax2 = ry1+dy0;
+    
+% %     rxmin1 = 3/16;
+% %     rxmax1 = 5/16;
+% %     rymin1 = 6.5/16;
+% %     rymax1 = 9.5/16;
+
 %     rxmin2 = 1-rxmax1;%6/16;
 %     rxmax2 = 1-rxmin1;%2/16;
 %     rymin2 = rymin1;%2/8;
 %     rymax2 = rymax1;%6/8;
-    
-    %% Kr
-    rxmin1 = 6.5/16;
-    rxmax1 = 9.5/16;
-    rymin1 = 6/16;
-    rymax1 = 10/16;
-
-    rxmin2 = 13/16;%6/16;
-    rxmax2 = 15/16;%2/16;
-    rymin2 = rymin1;%2/8;
-    rymax2 = rymax1;%6/8;
     
     
     if (~t_mask) && (~t_em)
@@ -643,7 +694,8 @@ xout = zeros(0);
 low_th = 0;
 % lim = [0:10:500];
 rxy = 10;
-xrange = 3;  % max(5,round(3/L_ratio));
+xrange = max(4,round(2/L_ratio));
+% xrange = 3;  % max(5,round(3/L_ratio));
 % xrange = 2;
 set(handles.hist_on,'String','Wait')
 guidata(hObject, handles);
@@ -655,7 +707,8 @@ k0 = strfind(imfolder,'stacks');
 imfolder0 = imfolder(1:(k0(end)-1));
 
 if get(handles.type_single,'Value') || get(handles.type_single2,'Value') || get(handles.type_background,'Value') || get(handles.type_background2,'Value')
-    lim = [0:1:2000];
+%     lim = [0:1:2000]; %[0:5:8000];
+     lim = [0:5:8000];
     decrease_th = 0.9^((lim(2)-lim(1))/20);
 %     [stack_th,t0,dt0] = th_find_low(spmask1(imstack,1),lim,decrease_th,low_th);
     [mask_out,mask_out2D] = spmask1(imstack,0,[],[],0);   %%% 3D local maximal mask generation (Primary filter)
@@ -663,8 +716,9 @@ if get(handles.type_single,'Value') || get(handles.type_single2,'Value') || get(
 % %     [mask_out,mask_out2D] = spmask1(imstack,1,[],[],0);   %%% 3D local maximal mask generation (Primary filter)
     [stack_th,t0,dt0] = th_find_low(mask_out,lim,decrease_th,low_th);
 else
-	lim = [200:200:20000];
-    decrease_th = 0.97^((lim(2)-lim(1))/200);
+% % % % % 	lim = [100:100:10000];11302021
+	lim = [100:400:40000];
+    decrease_th = 0.97^((lim(2)-lim(1))/400);
 %     [stack_th,t0,dt0] = th_find(spmask1(imstack,1),lim,decrease_th,low_th);
     [mask_out,mask_out2D] = spmask1(imstack,0,[],[],0);   %%% 3D local maximal mask generation (Primary filter)
 %     [mask_out,mask_out2D] = spmask1(imstack,1);   %%% 3D local maximal mask generation (Primary filter)
@@ -717,6 +771,18 @@ elseif get(handles.fit_result_on,'Value') && exist([imfolder0,sub_folder,xls_nam
         end
     end
     [old_spot,~,~] = xlsread([imfolder0,sub_folder(1:end-1),old_add,'/',xls_name2]);
+    
+    %%% Relate previous fitting results with identified local maxima: %%%%%
+    id0_max = find(mask_out & (imstack*65535 >= stack_th));
+    [x0_max,y0_max,z0_max] = ind2sub(size(imstack),id0_max);
+    xyz0_max = [x0_max,y0_max,z0_max];
+    xyz0_fit = round(old_spot(:,6:8)); 
+    
+    [d12min,I2min0] = min(pdist2(xyz0_max,xyz0_fit));
+    I2min = I2min0(d12min <= 3);
+    old_spot = [zeros(numel(unique(I2min)),5),xyz0_max(unique(I2min),:)];
+    %%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
     
     id0 = sub2ind(size(imstack),round(old_spot(:,6)),round(old_spot(:,7)),round(old_spot(:,8)));
     mask_out = false(size(imstack));
@@ -1348,7 +1414,7 @@ function ana_type_SelectionChangeFcn(hObject, eventdata)
  
 %retrieve GUI data, i.e. the handles structure
 handles = guidata(hObject); 
-global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast bk_label sub_folder bk_name sg_name stack_th stack_th0 channel2_add current_handle
+global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast bk_label sub_folder bk_name sg_name stack_th stack_th0 channel1_add channel2_add current_handle
 
 % % switch get(eventdata.NewValue,'Tag')   % Get Tag of selected object
 % %     case 'type_foci'
@@ -1429,3 +1495,184 @@ end
 
 % Update handles structure
 guidata(hObject, handles);
+
+
+% --- If Enable == 'on', executes on mouse press in 5 pixel border.
+% --- Otherwise, executes on mouse press in 5 pixel border or over type_foci.
+function type_foci_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to type_foci (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in type_foci.
+function type_foci_Callback(hObject, eventdata, handles)
+% hObject    handle to type_foci (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of type_foci
+
+
+% --- Executes during object creation, after setting all properties.
+function type_foci_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to type_foci (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes on button press in type_foci2.
+function type_foci2_Callback(hObject, eventdata, handles)
+% hObject    handle to type_foci2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of type_foci2
+
+
+% --- Executes during object creation, after setting all properties.
+function type_foci2_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to type_foci2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes on button press in type_single.
+function type_single_Callback(hObject, eventdata, handles)
+% hObject    handle to type_single (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of type_single
+
+
+% --- Executes during object creation, after setting all properties.
+function type_single_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to type_single (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes on button press in type_single2.
+function type_single2_Callback(hObject, eventdata, handles)
+% hObject    handle to type_single2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of type_single2
+
+
+% --- Executes during object creation, after setting all properties.
+function type_single2_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to type_single2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes during object creation, after setting all properties.
+function hist_auto_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to hist_auto (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes during object creation, after setting all properties.
+function hist_save_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to hist_save (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes during object creation, after setting all properties.
+function hist_on_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to hist_on (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes during object creation, after setting all properties.
+function sel_bk_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to sel_bk (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes during object creation, after setting all properties.
+function fit_result_on_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to fit_result_on (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes during object creation, after setting all properties.
+function presult_on_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to presult_on (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes during object creation, after setting all properties.
+function background_on_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to background_on (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes during object creation, after setting all properties.
+function show_bk_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to show_bk (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes during object creation, after setting all properties.
+function Fitted_on_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Fitted_on (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes during object creation, after setting all properties.
+function Peak_on_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Peak_on (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes during object creation, after setting all properties.
+function Mask_status_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Mask_status (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes during object creation, after setting all properties.
+function type_background_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to type_background (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes on button press in type_background.
+function type_background_Callback(hObject, eventdata, handles)
+% hObject    handle to type_background (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of type_background
+
+
+% --- Executes on button press in type_background2.
+function type_background2_Callback(hObject, eventdata, handles)
+% hObject    handle to type_background2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of type_background2
+
+
+% --- Executes during object creation, after setting all properties.
+function type_background2_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to type_background2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called

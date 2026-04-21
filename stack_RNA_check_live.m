@@ -1,35 +1,35 @@
-function varargout = stack_RNA_check(varargin)
-% STACK_RNA_CHECK M-file for stack_RNA_check.fig
-%      STACK_RNA_CHECK, by itself, creates a new STACK_RNA_CHECK or raises the existing
+function varargout = stack_RNA_check_live(varargin)
+% STACK_RNA_CHECK_LIVE M-file for stack_RNA_check_live.fig
+%      STACK_RNA_CHECK_LIVE, by itself, creates a new STACK_RNA_CHECK_LIVE or raises the existing
 %      singleton*.
 %
-%      H = STACK_RNA_CHECK returns the handle to a new STACK_RNA_CHECK or the handle to
+%      H = STACK_RNA_CHECK_LIVE returns the handle to a new STACK_RNA_CHECK_LIVE or the handle to
 %      the existing singleton*.
 %
-%      STACK_RNA_CHECK('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in STACK_RNA_CHECK.M with the given input arguments.
+%      STACK_RNA_CHECK_LIVE('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in STACK_RNA_CHECK_LIVE.M with the given input arguments.
 %
-%      STACK_RNA_CHECK('Property','Value',...) creates a new STACK_RNA_CHECK or raises the
+%      STACK_RNA_CHECK_LIVE('Property','Value',...) creates a new STACK_RNA_CHECK_LIVE or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before stack_RNA_check_OpeningFcn gets called.  An
+%      applied to the GUI before stack_RNA_check_live_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to stack_RNA_check_OpeningFcn via varargin.
+%      stop.  All inputs are passed to stack_RNA_check_live_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help stack_RNA_check
+% Edit the above text to modify the response to help stack_RNA_check_live
 
-% Last Modified by GUIDE v2.5 13-Oct-2019 23:16:00
+% Last Modified by GUIDE v2.5 15-Jun-2022 14:55:22
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @stack_RNA_check_OpeningFcn, ...
-                   'gui_OutputFcn',  @stack_RNA_check_OutputFcn, ...
+                   'gui_OpeningFcn', @stack_RNA_check_live_OpeningFcn, ...
+                   'gui_OutputFcn',  @stack_RNA_check_live_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1}) && ~isempty(varargin{1})
@@ -44,17 +44,17 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before stack_RNA_check is made visible.
-function stack_RNA_check_OpeningFcn(hObject, eventdata, handles, varargin)
+% --- Executes just before stack_RNA_check_live is made visible.
+function stack_RNA_check_live_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to stack_RNA_check (see VARARGIN)
+% varargin   command line arguments to stack_RNA_check_live (see VARARGIN)
 
 % Parameter setting:
 set(gcf,'WindowButtonDownFcn',{}); set(gcf,'KeyPressFcn',{@KeyPressFcn0,hObject,eventdata,handles});
-global varargin0 scale0 in_folder input_name out_folder hist_folder hist_folder_single mask_folder mask_name channel_name channel2_name mat_tail hist_tail fit_tail hist_add d0 ccode0 current_handle h00 ev00 resolution0
+global varargin0 scale0 in_folder input_name out_folder hist_folder hist_folder_single mask_folder mask_name channel_name channel2_name mat_tail hist_tail fit_tail hist_add d0 ccode0 current_handle h00 ev00 resolution0 prompt dlgtitle dims definput opts
 h00 = hObject;
 ev00 = eventdata;
 in_folder = 'stacks/';
@@ -75,8 +75,8 @@ if get(handles.ch1,'Value')
     hist_folder = 'Histogram/';
     hist_folder_single = 'Histogram_A/';
     channel_name = 'RNA_channel';
-    channel2_name = 'signal2_channel';
-%     channel_name = 'protein_channel';
+    %channel2_name = 'signal2_channel';
+     channel2_name = 'protein_channel';
 else
 %     hist_folder = ['Histogram_alignment',channel2_add,'/'];
     hist_folder = ['Histogram',channel2_add,'/'];
@@ -103,7 +103,14 @@ hist_add = '_add';
 d0 = 3;
 ccode0 = [0,1,0];
 resolution0 = 0.083;
-% Choose default command line output for stack_RNA_check
+%time
+prompt = {'Enter a time to check'};
+dlgtitle = 'Live Time';
+definput = {'0001'};
+dims = [1 40];
+opts.Interpreter = 'tex';
+% answer = inputdlg(prompt,dlgtitle,dims,definput,opts);
+% Choose default command line output for stack_RNA_check_live
 handles.output = hObject;
 %set(hObject,'toolbar','figure');
 set(hObject,'Resize','On');
@@ -115,13 +122,13 @@ set(gcf,'CloseRequestFcn',@th_closereq);
 % Update handles structure
 guidata(hObject, handles);
 
-% UIWAIT makes stack_RNA_check wait for user response (see UIRESUME)
+% UIWAIT makes stack_RNA_check_live wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = stack_RNA_check_OutputFcn(hObject, eventdata, handles) 
+function varargout = stack_RNA_check_live_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -143,10 +150,11 @@ function load_folder_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 set(gcf,'WindowButtonDownFcn',{}); set(gcf,'KeyPressFcn',{@KeyPressFcn0,hObject,eventdata,handles});
-global scale0 sub_list sub_num in_folder input_name open_folder
+global scale0 sub_list sub_num in_folder input_name open_folder prompt dlgtitle dims definput opts Times
 
-J1 = 1;
-
+J1 = 1; 
+TimeAnswer = inputdlg(prompt,dlgtitle,dims,definput,opts);
+Times=TimeAnswer{1};
 set(handles.load_folder,'String','Wait');
 % File loading:
 open_folder = uigetdir;
@@ -257,7 +265,7 @@ function list_J_core(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of list_J as text
 %        str2double(get(hObject,'String')) returns contents of list_J as a double
-global scale0 size0 bin0 sub_list sub_num open_folder out_folder in_folder hist_folder hist_folder_single mask_folder mask_name mat_tail hist_tail fit_tail channel_name channel2_name channel_value channel2_value im0 im1 im_now foci_list foci_list0 foci_im foci_id del_im add_im add_id mask2D b d0 ccode0 resolution0 L_ratio xrange
+global scale0 size0 bin0 sub_list sub_num open_folder out_folder in_folder hist_folder hist_folder_single mask_folder mask_name mat_tail hist_tail fit_tail channel_name channel2_name channel_value channel2_value im0 im1 im_now foci_list foci_list0 foci_im foci_id del_im add_im add_id mask2D b d0 ccode0 resolution0 L_ratio xrange Times TimeAdd TimeSheet TimeAddMask
 image_type = '*.tif';
 Ex = fspecial('gaussian',10,2);
 % Ix = fspecial('gaussian',30,10);
@@ -276,9 +284,9 @@ set(handles.ref_on,'Value',false);
 resolution = sub_num(JJ,9);
 L_ratio = (resolution/resolution0);
 xrange = max(5,round(3/L_ratio));
-
+TimeAdd=['_time',Times];
 % Load max_image:
-load([open_folder,out_folder,sub_list{JJ,3}(1:end-1),mat_tail],'max_image',channel_name,channel2_name);
+load([open_folder,out_folder,sub_list{JJ,3}(1:end-1),TimeAdd,mat_tail],'max_image',channel_name,channel2_name);
 size0 = size(max_image);
 bin0 = round(1/scale0);
 
@@ -340,8 +348,9 @@ end
 im_now = cat(3,im0,im1);   %%% Current FISH image with certain contrast
 
 % Load nuclear mask:
-if exist([open_folder,mask_folder,sub_list{JJ,3},mask_name,mat_tail])
-    load([open_folder,mask_folder,sub_list{JJ,3},mask_name,mat_tail],'mask_stack');
+TimeAddMask=['time',Times];
+if exist([open_folder,mask_folder,sub_list{JJ,3},TimeAddMask,mask_name,mat_tail])
+    load([open_folder,mask_folder,sub_list{JJ,3},TimeAddMask,mask_name,mat_tail],'mask_stack');
     mask2D = max(mask_stack,[],3);
     if bin0 > 1
         mask2D = blkproc(mask2D, [bin0,bin0], 'mean2');
@@ -352,40 +361,51 @@ else
 end
 
 % Load foci_list:
-[foci_list,~,~] = xlsread([open_folder,hist_folder,sub_list{JJ,3}(1:(end-1)),hist_tail]);
-if exist([open_folder,hist_folder_single,sub_list{JJ,3}(1:(end-1)),fit_tail])
-    load([open_folder,hist_folder_single,sub_list{JJ,3}(1:(end-1)),fit_tail],'b');
+TimeSheet=str2double(Times);
+fit_tail_time='_spot_fit';
+[foci_list,~,~] = xlsread([open_folder,hist_folder,sub_list{JJ,3}(1:(end-1)),hist_tail],TimeSheet);
+if exist([open_folder,hist_folder_single,sub_list{JJ,3}(1:(end-1)),fit_tail_time,TimeAdd,'.mat'])
+    load([open_folder,hist_folder_single,sub_list{JJ,3}(1:(end-1)),fit_tail_time,TimeAdd,'.mat'],'b');
 else
     b = 1;
 end
-foci_list0 = foci_list;
-foci_list = foci_combine(foci_list);
-if bin0 > 1
-    foci_list(:,6:7) = foci_list(:,6:7)/bin0;
+if ~isempty(foci_list)
+    foci_list0 = foci_list;
+    foci_list = foci_combine(foci_list);
+    if bin0 > 1
+        foci_list(:,6:7) = foci_list(:,6:7)/bin0;
+    end
+    foci_xy = max(round(foci_list(:,6:7)),1);
+    id_list = sub2ind(size(im0),foci_xy(:,1),foci_xy(:,2));
+    %%% foci image generation:
+    foci_im = false(size(im0));
+    foci_im(id_list) = true;
+    foci_im = bwthicken(foci_im,4);
+    %%% foci indices matrix generation:
+    foci_id = double(foci_im);
+    foci_id(id_list) = 1:numel(id_list);
+    foci_st = regionprops(foci_im,foci_id,'MaxIntensity');
+    id_list = [0,[foci_st.MaxIntensity]];
+    foci_id = id_list(bwlabel(foci_im)+1);
+
+    % Recording matrices initialization:
+    del_im = false(size(im0));
+    add_im = false(size(im0));
+    % del_id = false(size(im0));
+    add_id = false(size(im0));
+
+    % image output
+    axes(handles.im_show);
+    overlay = im_overlay(im_now,foci_im,del_im,add_im,mask2D,handles);
+    imshow(overlay)
+else
+    % image output
+    NanFoci=logical(zeros(size(mask2D)));
+    axes(handles.im_show);
+    overlay = im_overlay(im_now,NanFoci,NanFoci,NanFoci,mask2D,handles);
+    imshow(overlay)
 end
-foci_xy = max(round(foci_list(:,6:7)),1);
-id_list = sub2ind(size(im0),foci_xy(:,1),foci_xy(:,2));
-%%% foci image generation:
-foci_im = false(size(im0));
-foci_im(id_list) = true;
-foci_im = bwthicken(foci_im,4);
-%%% foci indices matrix generation:
-foci_id = double(foci_im);
-foci_id(id_list) = 1:numel(id_list);
-foci_st = regionprops(foci_im,foci_id,'MaxIntensity');
-id_list = [0,[foci_st.MaxIntensity]];
-foci_id = id_list(bwlabel(foci_im)+1);
 
-% Recording matrices initialization:
-del_im = false(size(im0));
-add_im = false(size(im0));
-% del_id = false(size(im0));
-add_id = false(size(im0));
-
-% image output
-axes(handles.im_show);
-overlay = im_overlay(im_now,foci_im,del_im,add_im,mask2D,handles);
-imshow(overlay)
 
 if get(handles.nu_on,'Value')
 hold on
@@ -808,7 +828,7 @@ function save_seg_Callback(hObject, eventdata, handles)
 % hObject    handle to save_seg (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global bin0 sub_list open_folder out_folder hist_folder mat_tail hist_tail hist_add channel_name channel2_name channel_value channel2_value im0 im1 im_now foci_list foci_im foci_id del_im add_im add_id mask2D b d0 ccode0
+global bin0 sub_list open_folder out_folder hist_folder mat_tail hist_tail hist_add channel_name channel2_name channel_value channel2_value im0 im1 im_now foci_list foci_im foci_id del_im add_im add_id mask2D b d0 ccode0 Times TimeAdd TimeSheet TimeAddMask
 outim_tail = '_foci_seg.fig';
 
 quit_reply = questdlg('Save the spot recognition result?');
@@ -829,11 +849,16 @@ if strcmp(quit_reply,'Yes')
         foci_list1(:,6:7) = foci_list(:,6:7)*bin0;
     end
     
-    delete([open_folder,hist_folder,sub_list{JJ,3}(1:(end-1)),hist_tail]);
-    xlswrite([open_folder,hist_folder,sub_list{JJ,3}(1:(end-1)),hist_tail],foci_list1);
-    
+%     delete([open_folder,hist_folder,sub_list{JJ,3}(1:(end-1)),hist_tail]);
+    if isempty(foci_list1)
+        foci_list_save=zeros(1,10);
+    else
+        foci_list_save=foci_list1;
+    end
+    xlswrite([open_folder,hist_folder,sub_list{JJ,3}(1:(end-1)),hist_tail],' ',TimeSheet,'A1:J500');
+    xlswrite([open_folder,hist_folder,sub_list{JJ,3}(1:(end-1)),hist_tail],foci_list_save,TimeSheet);
     if nnz(add_id)
-        save([open_folder,hist_folder,sub_list{JJ,3}(1:(end-1)),hist_add,mat_tail],'add_id','channel_value')
+        save([open_folder,hist_folder,sub_list{JJ,3}(1:(end-1)),hist_add,TimeAdd,mat_tail],'add_id','channel_value')
     end
     
     % Foci new id assignment:
@@ -868,7 +893,8 @@ if strcmp(quit_reply,'Yes')
     end
 
     title([open_folder,out_folder,sub_list{JJ,3}(1:(end-1)),', white: transcription foci recognition'])
-    saveas(h,[open_folder,hist_folder,sub_list{JJ,3}(1:(end-1)),outim_tail])
+    outim_tail_time=['_foci_seg',TimeAdd,'.fig'];
+    saveas(h,[open_folder,hist_folder,sub_list{JJ,3}(1:(end-1)),outim_tail_time])
     close(h)
     
     set(handles.save_seg,'String','Save');
@@ -1056,7 +1082,7 @@ function out_list = foci_combine(in_list)
 %% out_list: refined foci list.
 %% in_list: raw foci list.
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Lth = 1.5;
+Lth = 1;%old:1.5
 isrun = true;
 z_th = 0;
 out_list = in_list;
@@ -1118,7 +1144,7 @@ type_name = get(eventdata.NewValue,'Tag');
 switch_reply = questdlg(['Switch to ',type_name,'?']);
 
 if strcmp(switch_reply,'Yes')
-    stack_RNA_check_OpeningFcn(h00, ev00, handles, varargin0{:})
+    stack_RNA_check_live_OpeningFcn(h00, ev00, handles, varargin0{:})
 else
 % %     children_handle = get(handles.ana_type,'Children');
 % %     current_handle = get(handles.ana_type,'SelectedObject');
@@ -1214,6 +1240,56 @@ axis(v);
 % --- Executes during object creation, after setting all properties.
 function Ref_max_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to Ref_max (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on key press with focus on list_J and none of its controls.
+function list_J_KeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to list_J (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.UICONTROL)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+
+
+
+function TimeCheck_Callback(hObject, eventdata, handles)
+% hObject    handle to TimeCheck (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+set(gcf,'WindowButtonDownFcn',{}); set(gcf,'KeyPressFcn',{@KeyPressFcn0,hObject,eventdata,handles});
+global sub_list Times
+
+fig = gcf;
+Times = get(handles.TimeCheck,'String');
+JJ = str2num(get(handles.list_J,'String'));
+M1 = str2num(get(handles.all_J,'String'));
+TimesQ=[' Time ',Times];
+if JJ <= M1
+    quit_reply = questdlg(['Move to file #',sub_list{JJ,3}(1:(length(sub_list{JJ,3})-1)),TimesQ,' (Make sure you have saved the result)?']);
+    if strcmp(quit_reply,'Yes')
+        set(handles.next_file,'String','Wait');
+        % Update handles structure
+        guidata(hObject, handles);
+        list_J_core(hObject, eventdata, handles);
+        set(handles.next_file,'String','Next');
+    end
+end
+% Hints: get(hObject,'String') returns contents of TimeCheck as text
+%        str2double(get(hObject,'String')) returns contents of TimeCheck as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function TimeCheck_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to TimeCheck (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 

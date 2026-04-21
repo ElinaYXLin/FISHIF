@@ -1,4 +1,4 @@
-function varargout = stack_RNA(varargin)
+function varargout = stack_RNA_bhh(varargin)
 % STACK_RNA M-file for stack_RNA.fig
 %      STACK_RNA, by itself, creates a new STACK_RNA or raises the existing
 %      singleton*.
@@ -71,24 +71,13 @@ limthresh = [0,1];
 limcontrast = [0,1];
 old_add = '_old';
 channel2_add = '_RNA2';
-% % channel3_add = '_RNA3';
 t_full = false;
-
 if get(handles.type_single,'Value')
     sub_folder = 'Histogram_A/';
 elseif get(handles.type_background,'Value')
     sub_folder = 'Histogram_P/';
 elseif get(handles.type_foci,'Value')
     sub_folder = 'Histogram/';
-% %     sub_folder = 'Histogram_foci_A/';
-    
-% % if get(handles.type_single,'Value')
-% %     sub_folder = 'Histogram_A_488/';
-% % elseif get(handles.type_background,'Value')
-% %     sub_folder = 'Histogram_P_488/';
-% % elseif get(handles.type_foci,'Value')
-% %     sub_folder = 'Histogram_488/';
-
 elseif get(handles.type_single2,'Value')
     sub_folder = ['Histogram_A',channel2_add,'/'];
 elseif get(handles.type_background2,'Value')
@@ -347,7 +336,7 @@ lsm_stack = dir([imfolder,imname,'/',image_tail]); %%% image file list loading
 resolution = num_list(I_file,9);
 if get(handles.type_foci,'Value') || get(handles.type_single,'Value') || get(handles.type_background,'Value')
     RNA_channel = num_list(I_file,10); %%% RNA channel
-% % % %     RNA_channel = num_list(I_file,8);  %%% protein channel
+%     RNA_channel = num_list(I_file,8);
 else
     RNA_channel = num_list(I_file,12); %%% Signal2 channel
 %     RNA_channel = num_list(I_file,10); %%% Signal2 channel
@@ -363,7 +352,6 @@ for I_layer = 1:immax
 %     imstack = cat(3,imstack,imfilter(temp0(:,:,RNA_channel),fspecial('gaussian',3,1),'symmetric','conv'));
 end
 imstack = imfilter(imstack0,fspecial('gaussian',3,1),'symmetric','conv');
-% imstack = imfilter(imstack0,fspecial('gaussian',10,1.5),'symmetric','conv');
 tempmax(:) = max(max(imstack));
 
 %imstack0 = imstack0(ceil(size(imstack0,1)*1/4):ceil(size(imstack0,1)*3/4),ceil(size(imstack0,2)*1/4):ceil(size(imstack0,2)*3/4),:);
@@ -387,35 +375,54 @@ if ~t_full && (get(handles.type_single,'Value') || get(handles.type_single2,'Val
 %         em_mask = max(logical(mask_stack),[],3);
     end
     
+    rx0 = 8/16;%4/16;4/16
+    dx0 = 1/16;%1/16;3/16
+    ry0 = 8/16;%8/16;6/16
+    dy0 = 1.5/16;%1.5/16;4/16
     
-    %% hb
-%     rxmin1 = 3/16;
-%     rxmax1 = 5/16;
-%     rymin1 = 6.5/16;
-%     rymax1 = 9.5/16;
-% 
-%     rxmin2 = 1-rxmax1;%6/16;
-%     rxmax2 = 1-rxmin1;%2/16;
-%     rymin2 = rymin1;%2/8;
-%     rymax2 = rymax1;%6/8;
-    
-    %% Kr
-    rxmin1 = 6.5/16;
-    rxmax1 = 9.5/16;
-    rymin1 = 6/16;
-    rymax1 = 10/16;
-
-    rxmin2 = 13/16;%6/16;
-    rxmax2 = 15/16;%2/16;
-    rymin2 = rymin1;%2/8;
-    rymax2 = rymax1;%6/8;
-    
+    rx1 = 4/16;
+    ry1 = 8/16;
     
     if (~t_mask) && (~t_em)
         mask1D = max(max(logical(mask_stack),[],3),[],1);
         ELmin = find(mask1D,1);
         ELmax = find(mask1D,1,'last');
         
+        Lx = ELmax-ELmin;
+        Ly = size(imstack,1);
+    else
+        EL_info = get_EL(em_mask);
+
+        Lx = max(EL_info(3)-EL_info(1),size(imstack,2)/2);
+        Ly = max(EL_info(4)-EL_info(2),size(imstack,1)/2);
+    end
+    
+    if Lx*dx0/Ly/dy0 > 2
+        dx0 = Ly*dy0/Lx;
+    elseif Lx*dx0/Ly/dy0 < 1/2
+        dy0 = Lx*dx0/Ly;
+    end
+    
+    rxmin1 = rx0-dx0;
+    rxmax1 = rx0+dx0;
+    rymin1 = ry0-dy0;
+    rymax1 = ry0+dy0;
+    
+% %     rxmin1 = 3/16;
+% %     rxmax1 = 5/16;
+% %     rymin1 = 6.5/16;
+% %     rymax1 = 9.5/16;
+
+%     rxmin2 = 1-rxmax1;%6/16;
+%     rxmax2 = 1-rxmin1;%2/16;
+%     rymin2 = rymin1;%2/8;
+%     rymax2 = rymax1;%6/8;
+    rxmin2 = rx1-dx0;
+    rxmax2 = rx1+dx0;
+    rymin2 = ry1-dy0;
+    rymax2 = ry1+dy0;
+    
+    if (~t_mask) && (~t_em)
         xmin1 = round(ELmin+(ELmax-ELmin)*rxmin1);
         xmax1 = round(ELmin+(ELmax-ELmin)*rxmax1);
         ymin1 = round(rymin1*size(imstack,1));
@@ -426,8 +433,6 @@ if ~t_full && (get(handles.type_single,'Value') || get(handles.type_single2,'Val
         ymin2 = round(rymin2*size(imstack,1));
         ymax2 = round(rymax2*size(imstack,1));
     else
-        EL_info = get_EL(em_mask);
-
         x00 = round(EL_info(1)+(EL_info(3)-EL_info(1))*(rxmin1+rxmax1)/2);
             xmin1 = max(x00-round(max(EL_info(3)-EL_info(1),size(imstack,2)/2)*(rxmax1-rxmin1)/2),1);
             xmax1 = min(x00+round(max(EL_info(3)-EL_info(1),size(imstack,2)/2)*(rxmax1-rxmin1)/2),size(imstack,2));
@@ -444,7 +449,8 @@ if ~t_full && (get(handles.type_single,'Value') || get(handles.type_single2,'Val
     end
 
     Itrue = mean(mean(mean(imstack0(ymin1:ymax1,xmin1:xmax1,:)))) >= mean(mean(mean(imstack0(ymin2:ymax2,xmin2:xmax2,:))));
-    if ~xor(Itrue , get(handles.type_single,'Value') | get(handles.type_single2,'Value'))
+    %if ~xor(Itrue , get(handles.type_single,'Value') | get(handles.type_single2,'Value'))
+    if get(handles.type_single,'Value') 
         imstack0 = imstack0(ymin1:ymax1,xmin1:xmax1,:);
         imstack  = imstack(ymin1:ymax1,xmin1:xmax1,:);
         mask_stack  = mask_stack(ymin1:ymax1,xmin1:xmax1,:);
@@ -643,7 +649,8 @@ xout = zeros(0);
 low_th = 0;
 % lim = [0:10:500];
 rxy = 10;
-xrange = 3;  % max(5,round(3/L_ratio));
+xrange = max(4,round(2/L_ratio));
+% % rz0 = [0,200];
 % xrange = 2;
 set(handles.hist_on,'String','Wait')
 guidata(hObject, handles);
@@ -655,20 +662,21 @@ k0 = strfind(imfolder,'stacks');
 imfolder0 = imfolder(1:(k0(end)-1));
 
 if get(handles.type_single,'Value') || get(handles.type_single2,'Value') || get(handles.type_background,'Value') || get(handles.type_background2,'Value')
-    lim = [0:1:2000];
+    lim = [0:1:2000];%0:1:2000
     decrease_th = 0.9^((lim(2)-lim(1))/20);
 %     [stack_th,t0,dt0] = th_find_low(spmask1(imstack,1),lim,decrease_th,low_th);
-    [mask_out,mask_out2D] = spmask1(imstack,0,[],[],0);   %%% 3D local maximal mask generation (Primary filter)
+    [mask_out,mask_out2D,mask_outz] = spmask1(imstack,0,[],[],0);   %%% 3D local maximal mask generation (Primary filter)
 %     [mask_out,mask_out2D] = spmask1(imstack,1);   %%% 3D local maximal mask generation (Primary filter)
 % %     [mask_out,mask_out2D] = spmask1(imstack,1,[],[],0);   %%% 3D local maximal mask generation (Primary filter)
     [stack_th,t0,dt0] = th_find_low(mask_out,lim,decrease_th,low_th);
 else
-	lim = [200:200:20000];
-    decrease_th = 0.97^((lim(2)-lim(1))/200);
+	lim = [100:100:10000];%[100:100:10000]
+    decrease_th = 0.97^((lim(2)-lim(1))/100);
 %     [stack_th,t0,dt0] = th_find(spmask1(imstack,1),lim,decrease_th,low_th);
     [mask_out,mask_out2D] = spmask1(imstack,0,[],[],0);   %%% 3D local maximal mask generation (Primary filter)
 %     [mask_out,mask_out2D] = spmask1(imstack,1);   %%% 3D local maximal mask generation (Primary filter)
 % %     [mask_out,mask_out2D] = spmask1(imstack,1,[],[],0);   %%% 3D local maximal mask generation (Primary filter)
+    mask_outz = [];
     [stack_th,t0,dt0] = th_find(mask_out,lim,decrease_th,low_th);
 end
 
@@ -725,7 +733,8 @@ elseif get(handles.fit_result_on,'Value') && exist([imfolder0,sub_folder,xls_nam
     mask_out2D = mask_out2D & (~mask_out);
 
 %     peak_parameter = ptrack(imstack0,imstack,mask_out,mask_out2D,[],xrange);   %%% Track/fit mRNA spots
-    peak_parameter = ptrack(imstack*65535,imstack,mask_out,mask_out2D,0,xrange);   %%% Track/fit mRNA spots
+    peak_parameter = ptrack(imstack0,imstack,mask_out,mask_out2D,0,xrange);   %%% Track/fit mRNA spots
+%     peak_parameter = ptrack(imstack0,imstack,mask_out,mask_out2D,0,xrange,[],mask_outz);   %%% Track/fit mRNA spots
     max_spot = spfilter(peak_parameter,rxy,rxy,1);   %%% Fine filter to get rid of noise
     
 elseif get(handles.fit_result_on,'Value') && exist([imfolder0,sub_folder,xls_name2b],'file')
@@ -748,7 +757,8 @@ elseif get(handles.fit_result_on,'Value') && exist([imfolder0,sub_folder,xls_nam
     mask_out2D = mask_out2D & (~mask_out);
 
 %     peak_parameter = ptrack(imstack0,imstack,mask_out,mask_out2D,[],xrange);   %%% Track/fit mRNA spots
-    peak_parameter = ptrack(imstack*65535,imstack,mask_out,mask_out2D,0,xrange);   %%% Track/fit mRNA spots
+    peak_parameter = ptrack(imstack0,imstack,mask_out,mask_out2D,0,xrange);   %%% Track/fit mRNA spots
+%     peak_parameter = ptrack(imstack0,imstack,mask_out,mask_out2D,0,xrange,[],mask_outz);   %%% Track/fit mRNA spots
     max_spot = spfilter(peak_parameter,rxy,rxy,1);   %%% Fine filter to get rid of noise
     
 else
@@ -773,9 +783,12 @@ else
 %     mask_out2D(:,:,1:8) = false;
 
 %     peak_parameter = ptrack(imstack0,imstack,mask_out,mask_out2D,[],xrange);   %%% Track/fit mRNA spots
-    peak_parameter = ptrack(imstack*65535,imstack,mask_out,mask_out2D,0,xrange);   %%% Track/fit mRNA spots
+    peak_parameter = ptrack(imstack0,imstack,mask_out,mask_out2D,0,xrange);   %%% Track/fit mRNA spots
+%     peak_parameter = ptrack(imstack0,imstack,mask_out,mask_out2D,0,xrange,[],mask_outz);   %%% Track/fit mRNA spots
+% % %     peak_parameter = ptrack(imstack0,imstack,mask_out,mask_out2D,0,3);   %%% Track/fit mRNA spots
 %     peak_parameter = ptrack(imstack0,imstack,mask_out);   %%% Track/fit mRNA spots
     max_spot = spfilter(peak_parameter,rxy,rxy,1);   %%% Fine filter to get rid of noise
+% %     max_spot = spfilter(peak_parameter,rxy,rxy,1,[],rz0);   %%% Fine filter to get rid of noise
 end
 M_spot = max_spot(:,1).*max_spot(:,2).*max_spot(:,3)*2*pi;
 
@@ -916,7 +929,7 @@ function Peak_on_Callback(hObject, eventdata, handles)
 % hObject    handle to Peak_on (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak  resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast max_spot
+global imstack immask dlayer dcontrast dcontrmin dfsize dimthresh dmask dpeak mstatus resolution0 L_ratio g vlayer vcontrast vcontrmin vfsize vimthresh vmask vpeak limsize limthresh limcontrast max_spot
 vpeak = get(handles.Peak_on,'Value');
 
 overlay = cf_show1(imstack,g,vlayer,vimthresh,vpeak,vcontrast,vcontrmin,vmask,get(handles.Fitted_on,'Value'));
@@ -1249,10 +1262,9 @@ foci_sub = imstack((y-xy_radius):(y+xy_radius),(x-xy_radius):(x+xy_radius),vlaye
 
     temp_mask = false(size(mask_out));
     temp_mask((y-xy_radius):(y+xy_radius),(x-xy_radius):(x+xy_radius),vlayer) = mask_out((y-xy_radius):(y+xy_radius),(x-xy_radius):(x+xy_radius),vlayer);
-% %     [peak_parameter,xf_all] = ptrack3D(imstack*65535,imstack,temp_mask);   %%% Track/fit mRNA spots
-% % %     [peak_parameter,xf_all] = ptrack3D(imstack0,imstack,temp_mask);   %%% Track/fit mRNA spots
-% %     peak_parameter
-% %     temp_spot = spfilter(peak_parameter,10,10)   %%% Fine filter to get rid of noise
+    [peak_parameter,xf_all] = ptrack3D(imstack0,imstack,temp_mask);   %%% Track/fit mRNA spots
+    peak_parameter
+    temp_spot = spfilter(peak_parameter,10,10)   %%% Fine filter to get rid of noise
     
 %[X,Y] = meshgrid([-xy_radius:xy_radius],[-xy_radius:xy_radius]);
 figure

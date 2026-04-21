@@ -732,8 +732,7 @@ if (Nbin1-floor(Nbin1))*10 >= 1
 end
 
 size0 = size(im0);
-% % im_manual = imdilate(bwconvhull(logical(mask2D)),strel('disk',15));
-im_manual = imdilate(logical(mask2D),strel('disk',5));
+im_manual = imdilate(bwconvhull(logical(mask2D)),strel('disk',15));
 % % % % % for tt = 1:length(Nbin1)
 % % % % %     for ss = 1:(Nbin1(1)-1)
 % % % % %         im_manual(:,(ss*size0(Mdim(tt))/Nbin1(tt)-d0):(ss*size0(Mdim(tt))/Nbin1(tt)+d0)) = false;
@@ -743,9 +742,8 @@ im_manual = imdilate(logical(mask2D),strel('disk',5));
 % % im1 = im0 >= cth;
 % % prop0 = regionprops(im1,foci_im,'MaxIntensity');
 % % im2 = ismember(bwlabel(im1),find([prop0.MaxIntensity] == 0));
-im0f = imfilter(im0,fspecial('gaussian',15,1.5)-fspecial('gaussian',15,4),'symmetric','conv');
-% % add_id = imregionalmax(im0f) & im0f >= cth & ~foci_im;% & im_manual;
-add_id = imregionalmax(im0f) & im0f >= cth/8 & ~imdilate(foci_im,strel('disk',5)) & im_manual;
+im0f = imfilter(im0,fspecial('gaussian',3,1),'symmetric','conv');
+add_id = imregionalmax(im0f) & im0f >= cth & ~foci_im;% & im_manual;
 % add_id = imregionalmax(imfilter(im0,fspecial('gaussian',3,1),'symmetric','conv')) & im0 >= cth & ~foci_im;% & im_manual;
 add_im = bwthicken(add_id,1);
 
