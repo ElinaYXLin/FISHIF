@@ -1,5 +1,4 @@
 clear all
-close all
 
 %% Parameter setting: %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 list_name = 'Duallist.xls';
@@ -29,10 +28,6 @@ immu_add = '_immu';
 fluc_add = '_fluc';
 bino_add = '_bino';
 emmask_add = '_emmask';
-double_add = 'D';
-% size0 = 5000;
-bin0 = 3;
-Smin = 100;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -50,15 +45,8 @@ for list_I = 1:N1
     channel_name = eval(folder_list{list_I,5});
     for list_J = 1:M1
         image_folder = [folder_list{list_I,1},in_folder,sub_list{list_J,3}];
-        
-        if ~isempty(strfind(sub_list{list_J,2},double_add))
-            Nbin = sub_num(list_J,2:3);
-            Mdim = 1:2;
-        else
-            Mdim = sub_num(list_J,3);
-            Nbin = sub_num(list_J,2);
-        end
-        
+        Mdim = sub_num(list_J,3);
+        Nbin = sub_num(list_J,2);
         WGA_channel = sub_num(list_J,6);
         DAPI_channel = sub_num(list_J,7);
         RNA_channel = sub_num(list_J,10);
@@ -68,35 +56,14 @@ for list_I = 1:N1
         resolutionz = sub_num(list_J,11);
         all_color = eval(folder_list{list_I,5});
 
-
-        temp_name = dir([image_folder,image_type]);
-        temp0 = imread([image_folder,temp_name(1).name]);
-% %         if size0 > 0
-% %             scale0 = min(size0/max(size(temp0)),1);
-% %         else
-% %             scale0 = 1;
-% %         end
-        if bin0 > 1
-            scale0 = 1/bin0;
-        else
-            scale0 = 1;
-        end
-        clear temp_name temp0
-        
         %[seg_bw,cyto_bw,max_image,N_cycle,WGA_th0,DAPI_th0] = nuclei_seg4(image_folder,image_type,WGA_channel,DAPI_channel,resolution);
-        [seg_bw,cyto_bw,max_image,N_cycle,WGA_th0,DAPI_th0] = nuclei_segDAPI(image_folder,image_type,DAPI_channel,resolution,scale0,Smin);
-%         [mask_stack,signal_stack,~] = mask3D(seg_bw,protein_channel,DAPI_channel,RNA_channel,image_folder);
-
+        [seg_bw,cyto_bw,max_image,N_cycle,WGA_th0,DAPI_th0] = nuclei_segDAPI(image_folder,image_type,DAPI_channel,resolution);
+        [mask_stack,signal_stack,~] = mask3D(seg_bw,protein_channel,DAPI_channel,RNA_channel,image_folder);
         em_mask = get_emmask(image_folder,[],DAPI_channel);
         figure(1)
             out_image = double(repmat(bwperim(em_mask),[1,1,3]));
             out_image(:,:,3) = out_image(:,:,3)+double(max_image(:,:,DAPI_channel))/max(max(double(max_image(:,:,DAPI_channel))));
-            if scale0 < 1
-                out_image1 = imresize(out_image,scale0);
-            else
-                out_image1 = out_image;
-            end
-            imshow(out_image1)
+            imshow(out_image)
             title(image_folder,'Interpreter','none')
             
 %         max_size0 = size(max_image);
@@ -107,30 +74,20 @@ for list_I = 1:N1
 %         imcorr = repmat(imcorr1,Ntile);
 %         max_image = uint16(double(max_image)./imcorr);
         
-        [foci_bw,psize0,g_threshold0] = RNA_seg(seg_bw,max_image,RNA_channel,WGA_channel,resolution,image_folder,N_cycle,scale0);
-        [nucleus_RNA_profile,foci_RNA_profile,cytoplasmic_RNA_profile] = RNA_profile(seg_bw,cyto_bw,foci_bw,max_image,RNA_channel,resolution,image_folder,N_cycle,[],[],scale0);
-        [nucleus_protein_profile,cytoplasmic_protein_profile] = protein_profile(seg_bw,cyto_bw,max_image,protein_channel,image_folder,N_cycle);
-%         [nucleus_protein_profile,cytoplasmic_protein_profile] = protein_profile3(seg_bw,cyto_bw,max_image,protein_channel,mask_stack,signal_stack,image_folder,N_cycle,resolution);
+        [foci_bw,psize0,g_threshold0] = RNA_seg(seg_bw,max_image,RNA_channel,WGA_channel,resolution,image_folder,N_cycle);
+        [nucleus_RNA_profile,foci_RNA_profile,cytoplasmic_RNA_profile] = RNA_profile(seg_bw,cyto_bw,foci_bw,max_image,RNA_channel,resolution,image_folder,N_cycle);
+%         [nucleus_protein_profile,cytoplasmic_protein_profile] = protein_profile(seg_bw,cyto_bw,max_image,signal_channel,image_folder,N_cycle)
+        [nucleus_protein_profile,cytoplasmic_protein_profile] = protein_profile3(seg_bw,cyto_bw,max_image,protein_channel,mask_stack,signal_stack,image_folder,N_cycle,resolution);
         clear mask_stack signal_stack
         dual_profile(nucleus_protein_profile,nucleus_RNA_profile,foci_RNA_profile,image_folder,N_cycle);
 
         figure(16)
             temp_image = zeros(size(max_image,1),size(max_image,2),3);
             temp_image(:,:,2) = double(max_image(:,:,protein_channel))./max(max(double(max_image(:,:,protein_channel))));
-            if scale0 < 1
-                temp_image1 = imresize(temp_image,scale0);
-            else
-                temp_image1 = temp_image;
-            end
-            imshow(temp_image1);
+            imshow(temp_image);
             title(['Immunofluorescence signal: ',image_folder,', cycle = ',num2str(N_cycle)],'Interpreter','none');
         figure(17)
-            if scale0 < 1
-                temp_image1 = imresize(double(max_image(:,:,RNA_channel))./max(max(double(max_image(:,:,RNA_channel)))),scale0);
-            else
-                temp_image1 = double(max_image(:,:,RNA_channel))./max(max(double(max_image(:,:,RNA_channel))));
-            end
-            imshow(temp_image1);
+            imshow(double(max_image(:,:,RNA_channel))./max(max(double(max_image(:,:,RNA_channel)))));
             title(['FISH signal: ',image_folder,', cycle = ',num2str(N_cycle)],'Interpreter','none');
         
         
@@ -157,33 +114,32 @@ for list_I = 1:N1
         saveas(15,[result_folder,sub_list{list_J,3}(1:(length(sub_list{list_J,3})-1)),nu_add,foci_add,reg_add,figure_tail]);
         saveas(16,[result_folder,sub_list{list_J,3}(1:(length(sub_list{list_J,3})-1)),immu_add,figure_tail]);
         saveas(17,[result_folder,sub_list{list_J,3}(1:(length(sub_list{list_J,3})-1)),fish_add,figure_tail]);
-% %         saveas(62,[result_folder,sub_list{list_J,3}(1:(length(sub_list{list_J,3})-1)),protein_add,fluc_add,figure_tail]);
-% %         saveas(63,[result_folder,sub_list{list_J,3}(1:(length(sub_list{list_J,3})-1)),protein_add,bino_add,figure_tail]);
+        saveas(62,[result_folder,sub_list{list_J,3}(1:(length(sub_list{list_J,3})-1)),protein_add,fluc_add,figure_tail]);
+        saveas(63,[result_folder,sub_list{list_J,3}(1:(length(sub_list{list_J,3})-1)),protein_add,bino_add,figure_tail]);
         save([result_folder,sub_list{list_J,3}(1:(length(sub_list{list_J,3})-1)),mat_tail],'image_folder','image_type','WGA_channel','DAPI_channel','RNA_channel','protein_channel','signal2_channel','resolution','seg_bw','cyto_bw','em_mask','max_image','foci_bw','nucleus_RNA_profile','foci_RNA_profile','cytoplasmic_RNA_profile','nucleus_protein_profile','cytoplasmic_protein_profile','N_cycle','psize0','g_threshold0','WGA_th0','DAPI_th0','resolutionz','all_color','Nbin','Mdim');
         
-% %         if ~isempty(nucleus_RNA_profile)
-% %             xlswrite([result_folder,sub_list{list_J,3}(1:(length(sub_list{list_J,3})-1)),RNA_add,nu_add,output_tail],nucleus_RNA_profile);
-% %         end
-% %         if ~isempty(cytoplasmic_RNA_profile)
-% %             xlswrite([result_folder,sub_list{list_J,3}(1:(length(sub_list{list_J,3})-1)),RNA_add,cyto_add,output_tail],cytoplasmic_RNA_profile);
-% %         end
-% %         if ~isempty(foci_RNA_profile)
-% %             xlswrite([result_folder,sub_list{list_J,3}(1:(length(sub_list{list_J,3})-1)),RNA_add,foci_add,output_tail],foci_RNA_profile);
-% %         end
-% %         if ~isempty(nucleus_protein_profile)
-% %             xlswrite([result_folder,sub_list{list_J,3}(1:(length(sub_list{list_J,3})-1)),protein_add,nu_add,output_tail],nucleus_protein_profile);
-% %         end
-% %         if ~isempty(cytoplasmic_protein_profile)
-% %             xlswrite([result_folder,sub_list{list_J,3}(1:(length(sub_list{list_J,3})-1)),protein_add,cyto_add,output_tail],cytoplasmic_protein_profile);
-% %         end
+        if ~isempty(nucleus_RNA_profile)
+            xlswrite([result_folder,sub_list{list_J,3}(1:(length(sub_list{list_J,3})-1)),RNA_add,nu_add,output_tail],nucleus_RNA_profile);
+        end
+        if ~isempty(cytoplasmic_RNA_profile)
+            xlswrite([result_folder,sub_list{list_J,3}(1:(length(sub_list{list_J,3})-1)),RNA_add,cyto_add,output_tail],cytoplasmic_RNA_profile);
+        end
+        if ~isempty(foci_RNA_profile)
+            xlswrite([result_folder,sub_list{list_J,3}(1:(length(sub_list{list_J,3})-1)),RNA_add,foci_add,output_tail],foci_RNA_profile);
+        end
+        if ~isempty(nucleus_protein_profile)
+            xlswrite([result_folder,sub_list{list_J,3}(1:(length(sub_list{list_J,3})-1)),protein_add,nu_add,output_tail],nucleus_protein_profile);
+        end
+        if ~isempty(cytoplasmic_protein_profile)
+            xlswrite([result_folder,sub_list{list_J,3}(1:(length(sub_list{list_J,3})-1)),protein_add,cyto_add,output_tail],cytoplasmic_protein_profile);
+        end
         sub_num(list_J,13) = N_cycle;
         
         clear ('em_mask','seg_bw','cyto_bw','max_image','foci_bw','nucleus_RNA_profile','foci_RNA_profile','cytoplasmic_RNA_profile','nucleus_protein_profile','cytoplasmic_protein_profile','N_cycle','WGA_th0','DAPI_th0');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
         
     end
-    sub_list(:,4:4+size(sub_num,2)-1) = num2cell(sub_num);
-    xlswrite([folder_list{list_I,1},in_folder,input_name],sub_list);
+    xlswrite([folder_list{list_I,1},in_folder,input_name],cat(2,sub_list,num2cell(sub_num)));
 end
 
 close all
